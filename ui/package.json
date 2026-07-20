@@ -1,6 +1,7 @@
 {
   "name": "plugin-habit-tracker-ui",
   "version": "1.0.0",
+  "description": "Halo 自律打卡插件 - 番茄钟 + 习惯打卡 + 数据可视化",
   "private": true,
   "scripts": {
     "dev": "vite",

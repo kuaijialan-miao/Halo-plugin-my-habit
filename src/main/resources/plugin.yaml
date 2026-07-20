@@ -4,7 +4,7 @@ metadata:
   name: habit-tracker
 spec:
   enabled: true
-  version: 1.0.0-SNAPSHOT
+  version: 1.0.0
   requires: ">=2.17.0"
   author:
     name: Marvis & miaohaha
