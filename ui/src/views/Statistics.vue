@@ -60,6 +60,7 @@ onMounted(async () => {
 
     await loadWeekData()
     await loadPomodoroTrends()
+    await loadTrendData()
     computeTotals()
   } catch (e) {
     console.error('Failed to load stats:', e)
@@ -148,6 +149,31 @@ async function loadPomodoroTrends() {
   pomodoroMonth.value = month
 }
 
+async function loadTrendData() {
+  const today = new Date()
+  const dayMap = new Map<string, number>()
+
+  // 汇总所有习惯近 30 天的打卡
+  for (const habit of habits.value) {
+    try {
+      const checkins = await checkInApi.list(habit.spec.name)
+      for (const c of checkins) {
+        const d = c.spec.checkDate
+        dayMap.set(d, (dayMap.get(d) || 0) + 1)
+      }
+    } catch {}
+  }
+
+  const data: TrendPoint[] = []
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - i)
+    const dateStr = d.toISOString().slice(0, 10)
+    data.push({ date: dateStr, count: dayMap.get(dateStr) || 0 })
+  }
+  trend30Days.value = data
+}
+
 function computeTotals() {
   let checkins = 0
   for (let i = 0; i < 7; i++) {
@@ -167,6 +193,59 @@ function computeTotals() {
 }
 
 const heatLevelColors = ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127']
+
+// ========== SVG 折线趋势图 (Day 23) ==========
+
+interface TrendPoint {
+  date: string
+  count: number
+}
+
+const trend30Days = ref<TrendPoint[]>([])
+
+const chartConfig = computed(() => {
+  const data = trend30Days.value
+  if (!data.length) return null
+
+  const W = 740
+  const H = 180
+  const PAD_L = 36
+  const PAD_R = 12
+  const PAD_T = 12
+  const PAD_B = 28
+  const PLOT_W = W - PAD_L - PAD_R
+  const PLOT_H = H - PAD_T - PAD_B
+
+  const maxVal = Math.max(...data.map(d => d.count), 1)
+  const yMax = Math.ceil(maxVal * 1.2) || 5
+
+  const points = data.map((d, i) => {
+    const x = PAD_L + (i / (data.length - 1)) * PLOT_W
+    const y = PAD_T + PLOT_H - (d.count / yMax) * PLOT_H
+    return { x, y, ...d }
+  })
+
+  const polyline = points.map(p => `${p.x},${p.y}`).join(' ')
+
+  // 生成 Y 轴刻度
+  const yTicks = [0, Math.round(yMax / 2), yMax]
+
+  // 生成 X 轴标签（每 5 天一个）
+  const xLabels = data
+    .map((d, i) => ({ label: d.date.slice(5), index: i }))
+    .filter((_, i) => i % 5 === 0 || i === data.length - 1)
+
+  return { W, H, PAD_L, PAD_R, PAD_T, PAD_B, PLOT_W, PLOT_H, points, polyline, yTicks, xLabels, yMax }
+})
+
+const chartHover = ref<{ x: number; y: number; date: string; count: number } | null>(null)
+
+function showTooltip(pt: TrendPoint & { x: number; y: number }) {
+  chartHover.value = { x: pt.x, y: pt.y, date: pt.date, count: pt.count }
+}
+function hideTooltip() {
+  chartHover.value = null
+}
 
 const maxPomoCount = computed(() => {
   const all = pomodoroMonth.value.map(d => d.count)
@@ -210,6 +289,81 @@ function barHeight(count: number): string {
     <div v-if="loading" class="loading-state">加载中...</div>
 
     <template v-else>
+      <!-- 打卡趋势折线图 (Day 23) -->
+      <section class="section" v-if="chartConfig">
+        <h3>打卡趋势（近 30 天）</h3>
+        <div class="trend-chart">
+          <svg
+            :viewBox="`0 0 ${chartConfig.W} ${chartConfig.H}`"
+            class="trend-svg"
+            @mouseleave="hideTooltip"
+          >
+            <!-- 网格线 -->
+            <line
+              v-for="tick in chartConfig.yTicks"
+              :key="'grid-' + tick"
+              :x1="chartConfig.PAD_L"
+              :x2="chartConfig.W - chartConfig.PAD_R"
+              :y1="chartConfig.PAD_T + chartConfig.PLOT_H - (tick / chartConfig.yMax) * chartConfig.PLOT_H"
+              :y2="chartConfig.PAD_T + chartConfig.PLOT_H - (tick / chartConfig.yMax) * chartConfig.PLOT_H"
+              class="grid-line"
+            />
+            <!-- Y 轴刻度 -->
+            <text
+              v-for="tick in chartConfig.yTicks"
+              :key="'y-' + tick"
+              :x="chartConfig.PAD_L - 6"
+              :y="chartConfig.PAD_T + chartConfig.PLOT_H - (tick / chartConfig.yMax) * chartConfig.PLOT_H + 4"
+              class="y-label"
+            >{{ tick }}</text>
+
+            <!-- 折线 -->
+            <polyline
+              :points="chartConfig.polyline"
+              class="trend-line"
+            />
+
+            <!-- 数据点 -->
+            <circle
+              v-for="(pt, idx) in chartConfig.points"
+              :key="'dot-' + idx"
+              :cx="pt.x"
+              :cy="pt.y"
+              r="3"
+              class="trend-dot"
+              :class="{ 'has-value': pt.count > 0 }"
+              @mouseenter="showTooltip(pt)"
+            />
+
+            <!-- Tooltip -->
+            <g v-if="chartHover">
+              <rect
+                :x="chartHover.x - 36"
+                :y="chartHover.y - 32"
+                width="72"
+                height="22"
+                rx="4"
+                class="tooltip-bg"
+              />
+              <text
+                :x="chartHover.x"
+                :y="chartHover.y - 16"
+                class="tooltip-text"
+              >{{ chartHover.date }}: {{ chartHover.count }}次</text>
+            </g>
+
+            <!-- X 轴标签 -->
+            <text
+              v-for="xl in chartConfig.xLabels"
+              :key="'xl-' + xl.index"
+              :x="chartConfig.PAD_L + (xl.index / (chartConfig.points.length - 1)) * chartConfig.PLOT_W"
+              :y="chartConfig.H - 6"
+              class="x-label"
+            >{{ xl.label }}</text>
+          </svg>
+        </div>
+      </section>
+
       <!-- 本周打卡热力图 -->
       <section class="section">
         <h3>本周打卡 <span class="section-badge">{{ weekStats.total }} 次</span></h3>
@@ -327,4 +481,54 @@ function barHeight(count: number): string {
 .detail-table tr.empty { color: var(--ht-text-muted, #ccc); }
 
 .loading-state { text-align: center; padding: 60px; color: var(--ht-text-muted, #999); }
+
+/* SVG 折线图 (Day 23) */
+.trend-chart {
+  background: var(--ht-bg-secondary, #f5f5f5);
+  border-radius: 10px;
+  padding: 12px; overflow-x: auto;
+}
+.trend-svg {
+  width: 100%; height: auto; display: block;
+}
+.grid-line {
+  stroke: var(--ht-border, #e0e0e0);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.y-label {
+  font-size: 10px; fill: var(--ht-text-muted, #999);
+  text-anchor: end;
+}
+.x-label {
+  font-size: 9px; fill: var(--ht-text-muted, #999);
+  text-anchor: middle;
+}
+.trend-line {
+  fill: none;
+  stroke: var(--ht-primary, #4A90D9);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.trend-dot {
+  fill: var(--ht-bg-secondary, #f5f5f5);
+  stroke: var(--ht-primary, #4A90D9);
+  stroke-width: 2;
+  cursor: pointer;
+  transition: r .15s;
+}
+.trend-dot:hover { r: 5; }
+.trend-dot.has-value {
+  fill: var(--ht-primary, #4A90D9);
+  stroke: var(--ht-primary, #4A90D9);
+}
+.tooltip-bg {
+  fill: var(--ht-text, #333);
+  opacity: .85;
+}
+.tooltip-text {
+  font-size: 10px; fill: #fff;
+  text-anchor: middle;
+}
 </style>
