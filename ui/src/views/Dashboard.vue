@@ -1,28 +1,70 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { habitApi, checkInApi, pomodoroApi, taskApi } from '../api'
+import type { Habit, CheckInRecord } from '../api/types'
 
 const habitCount = ref(0)
 const todayCheckins = ref(0)
 const todayFocusMin = ref(0)
 const taskCount = ref(0)
 
+// Day 24: 今日习惯快捷打卡
+const habits = ref<Habit[]>([])
+const todayCheckMap = ref<Record<string, boolean>>({})
+const checkingIn = ref<Record<string, boolean>>({})
+
+const todayStr = computed(() => {
+  const d = new Date()
+  return d.toISOString().slice(0, 10)
+})
+
 onMounted(async () => {
   try {
-    const [habits, checkins, pomodoros, tasks] = await Promise.all([
+    const [habitsList, checkins, pomodoros, tasks] = await Promise.all([
       habitApi.list(),
       checkInApi.list(),
       pomodoroApi.list(),
       taskApi.list(),
     ])
-    habitCount.value = habits.length
+    habitCount.value = habitsList.length
     todayCheckins.value = checkins.length
     todayFocusMin.value = pomodoros
       .filter(p => p.spec.mode === 'FOCUS' && p.spec.endTime)
       .reduce((sum) => sum + 25, 0)
     taskCount.value = tasks.filter(t => t.spec.status !== 'DONE').length
+
+    // Day 24: 加载今日打卡状态
+    habits.value = habitsList
+    for (const h of habitsList) {
+      const exists = checkins.some(c => c.spec.habitName === h.spec.name && c.spec.checkDate === todayStr.value)
+      todayCheckMap.value[h.spec.name] = exists
+    }
   } catch { /* 后端未就绪 */ }
 })
+
+async function toggleCheckIn(habit: Habit) {
+  const name = habit.spec.name
+  if (checkingIn.value[name]) return
+  checkingIn.value[name] = true
+  try {
+    if (todayCheckMap.value[name]) {
+      // 找到今日打卡记录并删除
+      const allCheckins = await checkInApi.list(name)
+      const todayRecord = allCheckins.find(c => c.spec.checkDate === todayStr.value)
+      if (todayRecord) {
+        await checkInApi.delete(todayRecord.metadata.name)
+      }
+      todayCheckMap.value[name] = false
+      todayCheckins.value = Math.max(0, todayCheckins.value - 1)
+    } else {
+      await checkInApi.create({ spec: { habitName: name, checkDate: todayStr.value, note: '', createdAt: new Date().toISOString() } })
+      todayCheckMap.value[name] = true
+      todayCheckins.value++
+    }
+  } finally {
+    checkingIn.value[name] = false
+  }
+}
 </script>
 
 <template>
@@ -49,6 +91,27 @@ onMounted(async () => {
         <div class="stat-label">待办任务</div>
       </div>
     </div>
+
+    <!-- Day 24: 今日习惯快捷打卡 -->
+    <div class="quick-checkins" v-if="habits.length">
+      <h3>今日打卡</h3>
+      <div class="checkin-grid">
+        <button
+          v-for="h in habits"
+          :key="h.spec.name"
+          class="checkin-chip"
+          :class="{ checked: todayCheckMap[h.spec.name], loading: checkingIn[h.spec.name] }"
+          :style="{ '--habit-color': h.spec.color || '#4A90D9' }"
+          :disabled="checkingIn[h.spec.name]"
+          @click="toggleCheckIn(h)"
+        >
+          <span class="chip-icon">{{ h.spec.icon || '✅' }}</span>
+          <span class="chip-name">{{ h.spec.name }}</span>
+          <span class="chip-status">{{ todayCheckMap[h.spec.name] ? '✓' : '+' }}</span>
+        </button>
+      </div>
+    </div>
+
     <div class="quick-links">
       <h3>快捷入口</h3>
       <div class="link-grid">
@@ -89,4 +152,31 @@ onMounted(async () => {
 }
 .link-card:hover { transform: translateY(-2px); background: var(--ht-bg-hover, #f0f0f0); }
 .link-icon { font-size: 32px; }
+
+/* Day 24: 快捷打卡 */
+.quick-checkins { margin-bottom: 28px; }
+.quick-checkins h3 { font-size: 18px; margin-bottom: 12px; color: var(--ht-text, #333); }
+.checkin-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+.checkin-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 20px;
+  border: 2px solid var(--ht-border-light, #ddd);
+  background: var(--ht-bg, #fff);
+  cursor: pointer; font-size: 14px;
+  color: var(--ht-text-secondary, #666);
+  transition: all .2s;
+}
+.checkin-chip:hover { border-color: var(--habit-color); }
+.checkin-chip.checked {
+  background: color-mix(in srgb, var(--habit-color) 15%, var(--ht-bg, #fff));
+  border-color: var(--habit-color);
+  color: var(--habit-color);
+}
+.checkin-chip.loading { opacity: .5; pointer-events: none; }
+.chip-icon { font-size: 16px; }
+.chip-name { font-weight: 500; }
+.chip-status {
+  font-size: 14px; font-weight: 700; margin-left: 2px;
+}
+.checked .chip-status { color: var(--habit-color); }
 </style>
