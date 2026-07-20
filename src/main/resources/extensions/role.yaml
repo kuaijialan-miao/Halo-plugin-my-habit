@@ -1,0 +1,10 @@
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: habit-tracker-admin
+  labels:
+    halo.run/role-template: "true"
+rules:
+  - apiGroups: ["habit-tracker.miaohaha.com"]
+    resources: ["habits", "habits/*", "checkins", "checkins/*", "pomodoros", "pomodoros/*", "tasks", "tasks/*"]
+    verbs: ["*"]

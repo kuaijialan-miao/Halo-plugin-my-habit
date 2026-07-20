@@ -1,0 +1,33 @@
+apiVersion: v1alpha1
+kind: Menu
+metadata:
+  name: habit-tracker-menu
+spec:
+  displayName: "自律打卡"
+  icon: "timer"
+  priority: 50
+  menuItems:
+    - displayName: "仪表盘"
+      icon: "dashboard"
+      href: "/console/habit-tracker"
+      priority: 0
+    - displayName: "番茄钟"
+      icon: "timer"
+      href: "/console/habit-tracker/pomodoro"
+      priority: 10
+    - displayName: "习惯打卡"
+      icon: "check-square"
+      href: "/console/habit-tracker/habits"
+      priority: 20
+    - displayName: "任务管理"
+      icon: "list"
+      href: "/console/habit-tracker/tasks"
+      priority: 30
+    - displayName: "数据统计"
+      icon: "bar-chart"
+      href: "/console/habit-tracker/statistics"
+      priority: 40
+    - displayName: "设置"
+      icon: "settings"
+      href: "/console/habit-tracker/settings"
+      priority: 50

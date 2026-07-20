@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  halo:
+    image: halohub/halo:2.19
+    container_name: halo-dev
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./halo-data:/root/.halo2
+      - ./build/libs:/root/.halo2/plugins
+    environment:
+      - HALO_SECURITY_INITIALIZER_SUPERADMINUSERNAME=admin
+      - HALO_SECURITY_INITIALIZER_SUPERADMINPASSWORD=admin123456
+      - HALO_PLUGIN_RUNTIME_MODE=development
+      - HALO_PLUGIN_FIXED_PLUGIN_PATH=/root/.halo2/plugins/plugin-habit-tracker-*.jar
+    command:
+      - --spring.r2dbc.url=r2dbc:h2:file:///root/.halo2/db/halo
+      - --halo.plugin.runtime-mode=development

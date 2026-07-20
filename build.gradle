@@ -1,0 +1,38 @@
+plugins {
+    id "org.springframework.boot" version "3.2.5"
+    id "io.spring.dependency-management" version "1.1.4"
+    id "java"
+}
+
+group = "com.miaohaha.habit"
+version = "1.0.0-SNAPSHOT"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    maven { url "https://maven.aliyun.com/repository/public" }
+    mavenCentral()
+    maven { url "https://repo.spring.io/milestone" }
+}
+
+dependencies {
+    implementation platform("run.halo.tools.platform:halo-platform:2.19.0")
+    compileOnly "run.halo.app:api"
+
+    compileOnly "org.projectlombok:lombok"
+    annotationProcessor "org.projectlombok:lombok"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "io.projectreactor:reactor-test"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+}
+
+test {
+    useJUnitPlatform()
+}

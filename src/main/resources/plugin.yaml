@@ -1,0 +1,16 @@
+apiVersion: plugin.halo.run/v1alpha1
+kind: Plugin
+metadata:
+  name: habit-tracker
+spec:
+  enabled: true
+  version: 1.0.0-SNAPSHOT
+  requires: ">=2.17.0"
+  author:
+    name: Marvis & miaohaha
+  logo: https://halo.run/logo
+  homepage: https://github.com/miaohaha/plugin-habit-tracker
+  displayName: "自律打卡"
+  description: "番茄钟计时 + 习惯打卡 + 数据可视化，个人自律管理一站式Halo插件"
+  license:
+    - name: "MIT"
