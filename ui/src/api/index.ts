@@ -10,9 +10,9 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 
   try {
     const resp = await fetch(`${BASE_URL}${url}`, {
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
       ...options,
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      signal: controller.signal,
     })
     if (!resp.ok) {
       const err = await resp.text()
