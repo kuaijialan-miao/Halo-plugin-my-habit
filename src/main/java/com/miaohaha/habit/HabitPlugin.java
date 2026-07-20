@@ -1,15 +1,12 @@
 package com.miaohaha.habit;
 
-import org.pf4j.PluginWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import run.halo.app.plugin.BasePlugin;
 
+@Slf4j
 @Component
 public class HabitPlugin extends BasePlugin {
-
-    public HabitPlugin(PluginWrapper wrapper) {
-        super(wrapper);
-    }
 
     @Override
     public void start() {

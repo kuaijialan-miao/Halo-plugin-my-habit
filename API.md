@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: 8b0b5ee7b6380cef0b20b46d12aedfa5_a6712d6c840c11f180b3525400bff409
+    ReservedCode1: 0nFa4BXcxJweaytCh0JQIVS8Lf/YV6+365/7Xp+bqyMnpToM24t5NESsG+ATP97ubpzB84PPc2oXyHey5DP+1sX2f1QtShQscVj83Vb4UMZDZfMIBeiuTiocAlxamO2t3BBeQp5VRpfWZcXgKZW41fcMV5up2KxRAukrOzAQZ/S8y/9kE6aBTVVu8Ro=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: 8b0b5ee7b6380cef0b20b46d12aedfa5_a6712d6c840c11f180b3525400bff409
+    ReservedCode2: 0nFa4BXcxJweaytCh0JQIVS8Lf/YV6+365/7Xp+bqyMnpToM24t5NESsG+ATP97ubpzB84PPc2oXyHey5DP+1sX2f1QtShQscVj83Vb4UMZDZfMIBeiuTiocAlxamO2t3BBeQp5VRpfWZcXgKZW41fcMV5up2KxRAukrOzAQZ/S8y/9kE6aBTVVu8Ro=
+---
+
 # API 接口文档
 
 > 版本：v1.0.0
@@ -174,3 +185,4 @@ Task  (1) ──< (N) Pomodoro    一个任务可关联多个番茄钟
 ```
 
 数据导入顺序：Habits → Checkins → Pomodoros → Tasks
+*（内容由AI生成，仅供参考）*

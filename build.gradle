@@ -13,20 +13,29 @@ java {
 }
 
 repositories {
-    maven { url "https://maven.aliyun.com/repository/public" }
     mavenCentral()
+    maven { url "https://maven.halo.run/releases" }
+    maven { url "https://maven.aliyun.com/repository/public" }
     maven { url "https://repo.spring.io/milestone" }
 }
 
 dependencies {
-    implementation platform("run.halo.tools.platform:halo-platform:2.19.0")
-    compileOnly "run.halo.app:api"
+    compileOnly "run.halo.app:api:2.20.11"
 
     compileOnly "org.projectlombok:lombok"
     annotationProcessor "org.projectlombok:lombok"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "io.projectreactor:reactor-test"
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+    archiveClassifier = ""
 }
 
 tasks.withType(JavaCompile).configureEach {

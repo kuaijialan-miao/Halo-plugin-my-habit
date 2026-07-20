@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: 8b0b5ee7b6380cef0b20b46d12aedfa5_a7742011840c11f184135254006c9bbf
+    ReservedCode1: 3WbChVivm8ehTEYudaHSqAwDI7gQiLFmkfKI9jK8nNJk5EOJNd534ASsXTTJ9zt48GkCDhQ/I6eTtJVtgf6DAU2cmcqVWPpAoESt1gl3SWBBlkGIWrHQL7a2L57OcEcW05JvHglpReyvq9YGtODDfjNpphQnltHfGicQp2Qln4hjpLRhONjifcCeWIw=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: 8b0b5ee7b6380cef0b20b46d12aedfa5_a7742011840c11f184135254006c9bbf
+    ReservedCode2: 3WbChVivm8ehTEYudaHSqAwDI7gQiLFmkfKI9jK8nNJk5EOJNd534ASsXTTJ9zt48GkCDhQ/I6eTtJVtgf6DAU2cmcqVWPpAoESt1gl3SWBBlkGIWrHQL7a2L57OcEcW05JvHglpReyvq9YGtODDfjNpphQnltHfGicQp2Qln4hjpLRhONjifcCeWIw=
+---
+
 # CHANGELOG
 
 ## [1.0.0] — 2026-07-20
@@ -78,3 +89,4 @@
 - **修订号 (PATCH)**：向下兼容的问题修正
 
 `1.0.0` 为首次正式发布，包含插件所有核心功能。
+*（内容由AI生成，仅供参考）*

@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: 8b0b5ee7b6380cef0b20b46d12aedfa5_a3aae3c0840c11f184135254006c9bbf
+    ReservedCode1: reyvxoafeCPI6XFx5d8xpnxgtUc5HkTCqFtPjHWLOHh/lwJ6YWVD2Z+zTbhwwT4moRmpZWz6w6rWLi1thEmMt2Ax8+jzFQ0Kk8QuTWZoiNi4PQDJxpQgPLkooVxV2EE47Jf88ccrhCdCXP8g79uZu+xTBHmv/nWDgeoPZ1pXXuMKmux5VCj39ajbX/k=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: 8b0b5ee7b6380cef0b20b46d12aedfa5_a3aae3c0840c11f184135254006c9bbf
+    ReservedCode2: reyvxoafeCPI6XFx5d8xpnxgtUc5HkTCqFtPjHWLOHh/lwJ6YWVD2Z+zTbhwwT4moRmpZWz6w6rWLi1thEmMt2Ax8+jzFQ0Kk8QuTWZoiNi4PQDJxpQgPLkooVxV2EE47Jf88ccrhCdCXP8g79uZu+xTBHmv/nWDgeoPZ1pXXuMKmux5VCj39ajbX/k=
+---
+
 # Week 6 — End-to-End Integration Test Specification
 
 > 版本：v1.0 | 日期：2026-07-20
@@ -200,4 +211,5 @@
 | L3 | 数据导入无进度条 | 大批量时用户需等待，可接受 |
 | L4 | 无 i18n 国际化 | 仅中文，后续迭代 |
 
+*（内容由AI生成，仅供参考）*
 *（内容由AI生成，仅供参考）*
