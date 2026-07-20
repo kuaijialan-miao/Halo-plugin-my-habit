@@ -1,19 +1,315 @@
+<script setup lang="ts">
+/**
+ * Day 18: 任务管理页面
+ * - 任务CRUD + 拖拽排序（HTML5 Drag & Drop）
+ * - 状态切换（TODO / IN_PROGRESS / DONE）
+ * - 筛选（全部 / 待办 / 进行中 / 已完成）
+ * - 关联番茄计数
+ */
+import { ref, computed, onMounted } from 'vue'
+import { taskApi } from '../api'
+import type { Task } from '../api/types'
+
+const tasks = ref<Task[]>([])
+const loading = ref(true)
+const filter = ref<'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'>('ALL')
+const showCreate = ref(false)
+const newTaskTitle = ref('')
+
+// 拖拽状态
+const dragIndex = ref<number | null>(null)
+
+const statusLabels: Record<string, string> = {
+  TODO: '待办',
+  IN_PROGRESS: '进行中',
+  DONE: '已完成',
+}
+
+const statusColors: Record<string, string> = {
+  TODO: '#888',
+  IN_PROGRESS: '#FF9800',
+  DONE: '#4CAF50',
+}
+
+const priorityLabels: Record<string, string> = {
+  HIGH: '高',
+  MEDIUM: '中',
+  LOW: '低',
+}
+
+const priorityColors: Record<string, string> = {
+  HIGH: '#E91E63',
+  MEDIUM: '#FF9800',
+  LOW: '#4A90D9',
+}
+
+onMounted(async () => {
+  await loadTasks()
+})
+
+async function loadTasks() {
+  loading.value = true
+  try {
+    tasks.value = await taskApi.list()
+  } catch {
+    tasks.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+const filteredTasks = computed(() => {
+  if (filter.value === 'ALL') return tasks.value
+  return tasks.value.filter(t => t.spec.status === filter.value)
+})
+
+async function createTask() {
+  if (!newTaskTitle.value.trim()) return
+  try {
+    await taskApi.create({
+      spec: {
+        title: newTaskTitle.value.trim(),
+        priority: 'MEDIUM',
+        status: 'TODO',
+        estimatedPomos: 0,
+        pomodoroCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    } as any)
+    newTaskTitle.value = ''
+    showCreate.value = false
+    await loadTasks()
+  } catch (e) {
+    console.error('Failed to create task:', e)
+  }
+}
+
+async function cycleStatus(task: Task) {
+  const order: Array<'TODO' | 'IN_PROGRESS' | 'DONE'> = ['TODO', 'IN_PROGRESS', 'DONE']
+  const idx = order.indexOf(task.spec.status)
+  const nextStatus = order[(idx + 1) % order.length]
+  try {
+    await taskApi.update(task.metadata.name, {
+      spec: { ...task.spec, status: nextStatus, updatedAt: new Date().toISOString() },
+    } as any)
+    task.spec.status = nextStatus
+  } catch (e) {
+    console.error('Failed to update task status:', e)
+  }
+}
+
+async function deleteTask(task: Task) {
+  try {
+    await taskApi.delete(task.metadata.name)
+    tasks.value = tasks.value.filter(t => t.metadata.name !== task.metadata.name)
+  } catch (e) {
+    console.error('Failed to delete task:', e)
+  }
+}
+
+async function incrementPomodoro(task: Task) {
+  try {
+    const updated = await taskApi.incrementPomodoro(task.metadata.name)
+    task.spec.pomodoroCount = updated.spec.pomodoroCount
+  } catch (e) {
+    console.error('Failed to increment pomodoro:', e)
+  }
+}
+
+// 拖拽排序
+function onDragStart(index: number) {
+  dragIndex.value = index
+}
+
+function onDragOver(e: DragEvent) {
+  e.preventDefault()
+}
+
+function onDrop(targetIndex: number) {
+  if (dragIndex.value === null || dragIndex.value === targetIndex) return
+  const items = [...filteredTasks.value]
+  const [moved] = items.splice(dragIndex.value, 1)
+  items.splice(targetIndex, 0, moved)
+  // 更新原数组中对应项的顺序
+  const allItems = [...tasks.value]
+  const movedItem = allItems.find(t => t.metadata.name === moved.metadata.name)
+  if (movedItem) {
+    const originalIdx = allItems.indexOf(movedItem)
+    allItems.splice(originalIdx, 1)
+    allItems.splice(allItems.indexOf(items[targetIndex - 1] || items[0]), 0, movedItem)
+    tasks.value = allItems
+  }
+  dragIndex.value = null
+}
+
+function onDragEnd() {
+  dragIndex.value = null
+}
+
+const stats = computed(() => {
+  const total = tasks.value.length
+  const todo = tasks.value.filter(t => t.spec.status === 'TODO').length
+  const inProgress = tasks.value.filter(t => t.spec.status === 'IN_PROGRESS').length
+  const done = tasks.value.filter(t => t.spec.status === 'DONE').length
+  return { total, todo, inProgress, done }
+})
+</script>
+
 <template>
-  <div class="page-placeholder">
-    <div class="placeholder-icon">📝</div>
-    <h2>任务管理</h2>
-    <p class="desc">创建待办任务，关联番茄钟专注</p>
-    <p class="hint">即将在 Week 5 实现完整功能</p>
+  <div class="tasks-page">
+    <div class="tasks-header">
+      <h2>任务管理</h2>
+      <button class="btn-create" @click="showCreate = !showCreate">
+        {{ showCreate ? '取消' : '+ 新建任务' }}
+      </button>
+    </div>
+
+    <!-- 新建表单 -->
+    <div v-if="showCreate" class="create-bar">
+      <input
+        v-model="newTaskTitle"
+        type="text"
+        placeholder="输入任务标题，按回车创建..."
+        class="task-input"
+        @keyup.enter="createTask"
+      />
+      <button class="btn-add" @click="createTask" :disabled="!newTaskTitle.trim()">添加</button>
+    </div>
+
+    <!-- 统计条 -->
+    <div class="stats-bar">
+      <span>总计 {{ stats.total }}</span>
+      <span class="stat-todo">待办 {{ stats.todo }}</span>
+      <span class="stat-progress">进行中 {{ stats.inProgress }}</span>
+      <span class="stat-done">已完成 {{ stats.done }}</span>
+    </div>
+
+    <!-- 筛选 tabs -->
+    <div class="filter-tabs">
+      <button
+        v-for="f in (['ALL', 'TODO', 'IN_PROGRESS', 'DONE'] as const)"
+        :key="f"
+        class="filter-tab"
+        :class="{ active: filter === f }"
+        @click="filter = f"
+      >
+        {{ f === 'ALL' ? '全部' : statusLabels[f] }}
+      </button>
+    </div>
+
+    <!-- 任务列表 -->
+    <div v-if="loading" class="loading-state">加载中...</div>
+
+    <div v-else-if="filteredTasks.length === 0" class="empty-state">
+      <p>{{ filter === 'ALL' ? '暂无任务，创建一个吧' : '没有该状态的任务' }}</p>
+    </div>
+
+    <div v-else class="task-list">
+      <div
+        v-for="(task, index) in filteredTasks"
+        :key="task.metadata.name"
+        class="task-item"
+        :class="{
+          dragging: dragIndex === index,
+          done: task.spec.status === 'DONE',
+        }"
+        :draggable="filter === 'ALL' || filter === 'TODO'"
+        @dragstart="onDragStart(index)"
+        @dragover="onDragOver"
+        @drop="onDrop(index)"
+        @dragend="onDragEnd"
+      >
+        <div class="task-main" @click="cycleStatus(task)">
+          <span class="status-dot" :style="{ backgroundColor: statusColors[task.spec.status] }"></span>
+          <span class="task-title" :class="{ completed: task.spec.status === 'DONE' }">
+            {{ task.spec.title }}
+          </span>
+          <span class="priority-badge" :style="{ backgroundColor: priorityColors[task.spec.priority], color: '#fff' }">
+            {{ priorityLabels[task.spec.priority] }}
+          </span>
+        </div>
+        <div class="task-meta">
+          <span class="task-status" :style="{ color: statusColors[task.spec.status] }">
+            {{ statusLabels[task.spec.status] }}
+          </span>
+          <span class="task-pomos" @click.stop="incrementPomodoro(task)">
+            🍅 {{ task.spec.pomodoroCount }}
+          </span>
+          <button class="btn-delete" @click.stop="deleteTask(task)">🗑</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.page-placeholder {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 400px; color: #888;
+.tasks-page { padding: 24px; max-width: 700px; margin: 0 auto; }
+.tasks-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.tasks-header h2 { font-size: 22px; color: #333; margin: 0; }
+.btn-create {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--halo-color-primary, #4A90D9);
+  background: var(--halo-color-primary, #4A90D9); color: #fff; cursor: pointer; font-size: 14px;
 }
-.placeholder-icon { font-size: 64px; margin-bottom: 16px; }
-h2 { font-size: 22px; color: #333; margin-bottom: 8px; }
-.desc { font-size: 14px; margin-bottom: 8px; }
-.hint { font-size: 12px; color: #bbb; }
+.btn-create:hover { opacity: .9; }
+
+.create-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+.task-input {
+  flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #ddd;
+  font-size: 14px; outline: none;
+}
+.task-input:focus { border-color: var(--halo-color-primary, #4A90D9); }
+.btn-add {
+  padding: 10px 20px; border-radius: 8px; border: none;
+  background: var(--halo-color-primary, #4A90D9); color: #fff; cursor: pointer; font-size: 14px;
+}
+.btn-add:disabled { opacity: .5; cursor: not-allowed; }
+
+.stats-bar {
+  display: flex; gap: 16px; font-size: 12px; color: #888; margin-bottom: 12px;
+}
+.stat-todo { color: #888; }
+.stat-progress { color: #FF9800; }
+.stat-done { color: #4CAF50; }
+
+.filter-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+.filter-tab {
+  padding: 6px 14px; border-radius: 16px; border: 1px solid #ddd;
+  background: #fff; cursor: pointer; font-size: 13px; transition: all .2s;
+}
+.filter-tab:hover { border-color: var(--halo-color-primary, #4A90D9); }
+.filter-tab.active {
+  background: var(--halo-color-primary, #4A90D9); color: #fff; border-color: transparent;
+}
+
+.task-list { display: flex; flex-direction: column; gap: 8px; }
+.task-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px; border-radius: 10px; background: #fff;
+  border: 1px solid #eee; transition: all .2s; cursor: grab;
+}
+.task-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.task-item.dragging { opacity: .5; border-style: dashed; }
+.task-item.done { opacity: .6; }
+.task-main { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.task-title { font-size: 15px; color: #333; }
+.task-title.completed { text-decoration: line-through; color: #aaa; }
+.priority-badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500;
+}
+.task-meta { display: flex; align-items: center; gap: 12px; }
+.task-status { font-size: 12px; }
+.task-pomos {
+  font-size: 13px; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+  background: var(--halo-bg-secondary, #f5f5f5); transition: transform .15s;
+}
+.task-pomos:hover { transform: scale(1.1); }
+.btn-delete {
+  border: none; background: none; cursor: pointer; font-size: 14px;
+  opacity: .3; transition: opacity .2s;
+}
+.btn-delete:hover { opacity: 1; }
+
+.loading-state, .empty-state { text-align: center; padding: 40px; color: #999; }
 </style>

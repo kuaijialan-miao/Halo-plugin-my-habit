@@ -1,11 +1,12 @@
 /**
- * Day 12: 番茄钟核心编排 composable
+ * Day 12 + Day 17: 番茄钟核心编排 composable
  *
  * 职责：
  * 1. 管理 Web Worker 生命周期（创建、消息通信、销毁）
  * 2. 驱动状态机（createStateMachine）
  * 3. 触发音效和通知（useSound / useNotification）
- * 4. 暴露响应式状态给 UI 组件
+ * 4. 番茄完成时自动调用后端 API 持久化（Day 17）
+ * 5. 暴露响应式状态给 UI 组件
  */
 
 import { ref, computed, onUnmounted, type Ref, type ComputedRef } from 'vue'
@@ -30,6 +31,7 @@ import {
   notifyBreakEnd,
   notifyLongBreakEnd,
 } from './useNotification'
+import { pomodoroApi } from '../api/pomodoro'
 
 export interface UsePomodoroReturn {
   // 状态
@@ -127,6 +129,31 @@ export function usePomodoro(initialConfig?: Partial<PomodoroConfig>): UsePomodor
     }
   }
 
+  let activePomodoroName: string | null = null // 当前番茄记录名称，用于 finish
+
+  /** 番茄完成时自动调用后端 API 持久化（Day 17） */
+  async function persistPomodoro(mode: string, durationSeconds: number) {
+    try {
+      const now = new Date()
+      const startTime = new Date(now.getTime() - durationSeconds * 1000)
+      const pomodoro = await pomodoroApi.create({
+        spec: {
+          mode: mode as 'FOCUS',
+          duration: durationSeconds,
+          startTime: startTime.toISOString(),
+          endTime: null,
+          taskName: '',
+        },
+      } as any)
+      activePomodoroName = pomodoro.metadata.name
+      await pomodoroApi.finish(activePomodoroName!)
+      activePomodoroName = null
+    } catch (e) {
+      console.error('[Pomodoro] Failed to persist:', e)
+      activePomodoroName = null
+    }
+  }
+
   function handleComplete() {
     const ctx = sm.getContext()
     const completedState = ctx.state
@@ -139,6 +166,9 @@ export function usePomodoro(initialConfig?: Partial<PomodoroConfig>): UsePomodor
       focusCount.value = newCtx.focusCount
       totalFocusToday.value = newCtx.totalFocusToday
       currentMode.value = result.newState
+
+      // 番茄完成时自动持久化（Day 17）
+      persistPomodoro('FOCUS', newCtx.config.focusDuration)
 
       // 通知
       notifyPomodoroComplete(newCtx.totalFocusToday)
@@ -154,6 +184,12 @@ export function usePomodoro(initialConfig?: Partial<PomodoroConfig>): UsePomodor
       focusCount.value = sm.getContext().focusCount
       totalFocusToday.value = sm.getContext().totalFocusToday
       currentMode.value = result.newState
+
+      // 休息完成也记录
+      const breakDuration = completedState === 'SHORT_BREAK'
+        ? sm.getContext().config.shortBreakDuration
+        : sm.getContext().config.longBreakDuration
+      persistPomodoro(completedState === 'SHORT_BREAK' ? 'SHORT_BREAK' : 'LONG_BREAK', breakDuration)
 
       // 通知
       if (completedState === 'LONG_BREAK') {
