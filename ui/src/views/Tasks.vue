@@ -258,70 +258,71 @@ const stats = computed(() => {
 <style scoped>
 .tasks-page { padding: 24px; max-width: 700px; margin: 0 auto; }
 .tasks-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.tasks-header h2 { font-size: 22px; color: #333; margin: 0; }
+.tasks-header h2 { font-size: 22px; color: var(--ht-text, #333); margin: 0; }
 .btn-create {
-  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--halo-color-primary, #4A90D9);
-  background: var(--halo-color-primary, #4A90D9); color: #fff; cursor: pointer; font-size: 14px;
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--ht-primary, #4A90D9);
+  background: var(--ht-primary, #4A90D9); color: #fff; cursor: pointer; font-size: 14px;
 }
 .btn-create:hover { opacity: .9; }
 
 .create-bar { display: flex; gap: 8px; margin-bottom: 16px; }
 .task-input {
-  flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #ddd;
-  font-size: 14px; outline: none;
+  flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--ht-border-light, #ddd);
+  font-size: 14px; outline: none; background: var(--ht-bg, #fff); color: var(--ht-text, #333);
 }
-.task-input:focus { border-color: var(--halo-color-primary, #4A90D9); }
+.task-input:focus { border-color: var(--ht-primary, #4A90D9); }
 .btn-add {
   padding: 10px 20px; border-radius: 8px; border: none;
-  background: var(--halo-color-primary, #4A90D9); color: #fff; cursor: pointer; font-size: 14px;
+  background: var(--ht-primary, #4A90D9); color: #fff; cursor: pointer; font-size: 14px;
 }
 .btn-add:disabled { opacity: .5; cursor: not-allowed; }
 
 .stats-bar {
-  display: flex; gap: 16px; font-size: 12px; color: #888; margin-bottom: 12px;
+  display: flex; gap: 16px; font-size: 12px; color: var(--ht-text-tertiary, #888); margin-bottom: 12px;
 }
-.stat-todo { color: #888; }
+.stat-todo { color: var(--ht-text-tertiary, #888); }
 .stat-progress { color: #FF9800; }
-.stat-done { color: #4CAF50; }
+.stat-done { color: var(--ht-success, #4CAF50); }
 
 .filter-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
 .filter-tab {
-  padding: 6px 14px; border-radius: 16px; border: 1px solid #ddd;
-  background: #fff; cursor: pointer; font-size: 13px; transition: all .2s;
+  padding: 6px 14px; border-radius: 16px; border: 1px solid var(--ht-border-light, #ddd);
+  background: var(--ht-bg, #fff); cursor: pointer; font-size: 13px; transition: all .2s;
+  color: var(--ht-text-secondary, #666);
 }
-.filter-tab:hover { border-color: var(--halo-color-primary, #4A90D9); }
+.filter-tab:hover { border-color: var(--ht-primary, #4A90D9); }
 .filter-tab.active {
-  background: var(--halo-color-primary, #4A90D9); color: #fff; border-color: transparent;
+  background: var(--ht-primary, #4A90D9); color: #fff; border-color: transparent;
 }
 
 .task-list { display: flex; flex-direction: column; gap: 8px; }
 .task-item {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 16px; border-radius: 10px; background: #fff;
-  border: 1px solid #eee; transition: all .2s; cursor: grab;
+  padding: 14px 16px; border-radius: 10px; background: var(--ht-bg, #fff);
+  border: 1px solid var(--ht-border, #eee); transition: all .2s; cursor: grab;
 }
-.task-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.task-item:hover { box-shadow: 0 2px 8px var(--ht-shadow, rgba(0,0,0,.06)); }
 .task-item.dragging { opacity: .5; border-style: dashed; }
 .task-item.done { opacity: .6; }
 .task-main { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; }
 .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.task-title { font-size: 15px; color: #333; }
-.task-title.completed { text-decoration: line-through; color: #aaa; }
+.task-title { font-size: 15px; color: var(--ht-text, #333); }
+.task-title.completed { text-decoration: line-through; color: var(--ht-text-muted, #aaa); }
 .priority-badge {
   font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500;
 }
 .task-meta { display: flex; align-items: center; gap: 12px; }
-.task-status { font-size: 12px; }
+.task-status { font-size: 12px; color: var(--ht-text-tertiary, #888); }
 .task-pomos {
   font-size: 13px; cursor: pointer; padding: 4px 8px; border-radius: 6px;
-  background: var(--halo-bg-secondary, #f5f5f5); transition: transform .15s;
+  background: var(--ht-bg-secondary, #f5f5f5); transition: transform .15s;
 }
 .task-pomos:hover { transform: scale(1.1); }
 .btn-delete {
   border: none; background: none; cursor: pointer; font-size: 14px;
-  opacity: .3; transition: opacity .2s;
+  opacity: .3; transition: opacity .2s; color: var(--ht-text-secondary, #666);
 }
 .btn-delete:hover { opacity: 1; }
 
-.loading-state, .empty-state { text-align: center; padding: 40px; color: #999; }
+.loading-state, .empty-state { text-align: center; padding: 40px; color: var(--ht-text-muted, #999); }
 </style>

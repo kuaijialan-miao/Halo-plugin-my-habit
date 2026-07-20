@@ -105,7 +105,7 @@ const centerFontSize = computed(() => {
 }
 
 .progress-ring__bg {
-  stroke: #e8e8e8;
+  stroke: var(--ht-border, #e8e8e8);
   transition: stroke 0.3s;
 }
 
@@ -123,7 +123,7 @@ const centerFontSize = computed(() => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #333;
+  color: var(--ht-text, #333);
   font-weight: 600;
   user-select: none;
 }

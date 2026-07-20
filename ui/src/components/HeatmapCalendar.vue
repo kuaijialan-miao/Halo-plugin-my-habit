@@ -178,7 +178,7 @@ watch(() => props.habitName, () => { loadData() })
 <style scoped>
 .heatmap-wrapper { margin-top: 12px; }
 .heatmap-loading, .heatmap-empty {
-  text-align: center; color: #999; font-size: 13px; padding: 20px;
+  text-align: center; color: var(--ht-text-muted, #999); font-size: 13px; padding: 20px;
 }
 .heatmap-container { overflow-x: auto; }
 .heatmap-header {
@@ -186,10 +186,10 @@ watch(() => props.habitName, () => { loadData() })
   grid-template-columns: 30px repeat(52, 1fr);
   margin-bottom: 2px;
 }
-.month-label { font-size: 11px; color: #888; }
+.month-label { font-size: 11px; color: var(--ht-text-tertiary, #888); }
 .heatmap-body { display: flex; gap: 2px; }
 .day-labels { display: flex; flex-direction: column; gap: 3px; width: 24px; padding-top: 1px; }
-.day-label { font-size: 10px; color: #aaa; line-height: 12px; height: 12px; }
+.day-label { font-size: 10px; color: var(--ht-text-muted, #aaa); line-height: 12px; height: 12px; }
 .heatmap-grid { display: flex; gap: 3px; }
 .heatmap-col { display: flex; flex-direction: column; gap: 3px; }
 .heatmap-cell {
@@ -199,7 +199,7 @@ watch(() => props.habitName, () => { loadData() })
 .heatmap-cell:hover { transform: scale(1.3); }
 .heatmap-legend {
   display: flex; align-items: center; gap: 3px; justify-content: flex-end;
-  font-size: 11px; color: #888; margin-top: 8px;
+  font-size: 11px; color: var(--ht-text-tertiary, #888); margin-top: 8px;
 }
 .legend-cell { width: 12px; height: 12px; border-radius: 2px; }
 </style>

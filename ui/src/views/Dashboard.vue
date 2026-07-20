@@ -72,18 +72,21 @@ onMounted(async () => {
 <style scoped>
 .dashboard { padding: 24px; max-width: 960px; margin: 0 auto; }
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-.stat-card { background: var(--halo-bg-secondary, #f5f5f5); border-radius: 12px; padding: 20px; text-align: center; }
+.stat-card {
+  background: var(--ht-bg-secondary, #f5f5f5); border-radius: 12px;
+  padding: 20px; text-align: center;
+}
 .stat-icon { font-size: 28px; margin-bottom: 8px; }
-.stat-value { font-size: 32px; font-weight: 700; color: var(--halo-color-primary, #4A90D9); }
+.stat-value { font-size: 32px; font-weight: 700; color: var(--ht-primary, #4A90D9); }
 .unit { font-size: 14px; font-weight: 400; margin-left: 4px; }
-.stat-label { font-size: 13px; color: #888; margin-top: 4px; }
-.quick-links h3 { font-size: 18px; margin-bottom: 12px; }
+.stat-label { font-size: 13px; color: var(--ht-text-tertiary, #888); margin-top: 4px; }
+.quick-links h3 { font-size: 18px; margin-bottom: 12px; color: var(--ht-text, #333); }
 .link-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .link-card {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
-  background: var(--halo-bg-secondary); border-radius: 10px; padding: 20px 12px;
-  text-decoration: none; color: inherit; transition: transform .15s;
+  background: var(--ht-bg-secondary, #f5f5f5); border-radius: 10px; padding: 20px 12px;
+  text-decoration: none; color: var(--ht-text-secondary, #666); transition: transform .15s;
 }
-.link-card:hover { transform: translateY(-2px); }
+.link-card:hover { transform: translateY(-2px); background: var(--ht-bg-hover, #f0f0f0); }
 .link-icon { font-size: 32px; }
 </style>

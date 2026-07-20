@@ -1,6 +1,10 @@
 import { definePlugin } from "@halo-dev/console-shared";
 import { markRaw } from "vue";
+import { initTheme } from "./composables/useTheme";
 import Dashboard from "./views/Dashboard.vue";
+
+// Initialize theme system
+initTheme();
 import Pomodoro from "./views/Pomodoro.vue";
 import Habits from "./views/Habits.vue";
 import Tasks from "./views/Tasks.vue";

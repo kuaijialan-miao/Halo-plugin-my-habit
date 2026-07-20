@@ -180,56 +180,57 @@ function selectHabit(name: string) {
 <style scoped>
 .habits-page { padding: 24px; max-width: 800px; margin: 0 auto; }
 .habits-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.habits-header h2 { font-size: 22px; color: #333; margin: 0; }
+.habits-header h2 { font-size: 22px; color: var(--ht-text, #333); margin: 0; }
 .btn-create {
-  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--halo-color-primary, #4A90D9);
-  background: var(--halo-color-primary, #4A90D9); color: #fff; cursor: pointer; font-size: 14px;
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--ht-primary, #4A90D9);
+  background: var(--ht-primary, #4A90D9); color: #fff; cursor: pointer; font-size: 14px;
 }
 .btn-create:hover { opacity: .9; }
 
 /* 新建表单 */
 .create-form {
-  background: var(--halo-bg-secondary, #f5f5f5); border-radius: 12px; padding: 20px;
+  background: var(--ht-bg-secondary, #f5f5f5); border-radius: 12px; padding: 20px;
   margin-bottom: 20px;
 }
 .form-row { margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
-.form-label { font-size: 13px; color: #888; min-width: 40px; }
+.form-label { font-size: 13px; color: var(--ht-text-tertiary, #888); min-width: 40px; }
 .name-input {
-  flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #ddd;
-  font-size: 14px; outline: none;
+  flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--ht-border-light, #ddd);
+  font-size: 14px; outline: none; background: var(--ht-bg, #fff); color: var(--ht-text, #333);
 }
-.name-input:focus { border-color: var(--halo-color-primary, #4A90D9); }
+.name-input:focus { border-color: var(--ht-primary, #4A90D9); }
 .btn-save {
   padding: 10px 20px; border-radius: 8px; border: none;
-  background: var(--halo-color-primary, #4A90D9); color: #fff; cursor: pointer;
+  background: var(--ht-primary, #4A90D9); color: #fff; cursor: pointer;
   font-size: 14px;
 }
 .btn-save:disabled { opacity: .5; cursor: not-allowed; }
 .icon-picker, .color-picker { display: flex; gap: 6px; flex-wrap: wrap; }
 .icon-option {
   width: 36px; height: 36px; border-radius: 8px; border: 2px solid transparent;
-  background: #fff; cursor: pointer; font-size: 18px; display: flex;
+  background: var(--ht-bg, #fff); cursor: pointer; font-size: 18px; display: flex;
   align-items: center; justify-content: center;
 }
-.icon-option.active { border-color: var(--halo-color-primary, #4A90D9); background: #e3f2fd; }
+.icon-option.active { border-color: var(--ht-primary, #4A90D9); background: var(--ht-primary-light, #e3f2fd); }
 .color-option {
   width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent;
   cursor: pointer;
 }
-.color-option.active { border-color: #333; transform: scale(1.15); }
+.color-option.active { border-color: var(--ht-text, #333); transform: scale(1.15); }
 
 /* Tabs */
 .habit-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
 .habit-tab {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 16px; border-radius: 20px; border: 2px solid transparent;
-  background: var(--halo-bg-secondary, #f5f5f5); cursor: pointer; font-size: 14px;
+  background: var(--ht-bg-secondary, #f5f5f5); cursor: pointer; font-size: 14px;
+  color: var(--ht-text-secondary, #666);
   transition: all .2s;
 }
-.habit-tab:hover { border-color: #ddd; }
+.habit-tab:hover { border-color: var(--ht-border-light, #ddd); }
 .habit-tab.active {
-  background: #fff; border-color: var(--tab-color, #4A90D9);
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  background: var(--ht-bg, #fff); border-color: var(--tab-color, #4A90D9);
+  box-shadow: 0 2px 8px var(--ht-shadow, rgba(0,0,0,.08));
 }
 .tab-icon { font-size: 16px; }
 .tab-name { font-weight: 500; }
@@ -237,18 +238,18 @@ function selectHabit(name: string) {
 /* 习惯详情 */
 .habit-hero {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 20px; background: #fff; border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 20px;
+  padding: 20px; background: var(--ht-bg, #fff); border-radius: 12px;
+  box-shadow: 0 2px 8px var(--ht-shadow, rgba(0,0,0,.06)); margin-bottom: 20px;
 }
 .habit-info { display: flex; align-items: center; gap: 14px; }
 .habit-icon-lg { font-size: 40px; }
-.habit-info h3 { font-size: 20px; color: #333; margin: 0; }
-.habit-target { font-size: 13px; color: #888; margin: 4px 0 0; }
+.habit-info h3 { font-size: 20px; color: var(--ht-text, #333); margin: 0; }
+.habit-target { font-size: 13px; color: var(--ht-text-tertiary, #888); margin: 4px 0 0; }
 .heatmap-section { margin-top: 8px; }
-.heatmap-section h4 { font-size: 15px; color: #555; margin-bottom: 8px; }
+.heatmap-section h4 { font-size: 15px; color: var(--ht-text-secondary, #555); margin-bottom: 8px; }
 
 .loading-state, .empty-state {
-  text-align: center; padding: 60px 20px; color: #999;
+  text-align: center; padding: 60px 20px; color: var(--ht-text-muted, #999);
 }
 .empty-icon { font-size: 48px; display: block; margin-bottom: 12px; }
 </style>

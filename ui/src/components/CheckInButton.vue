@@ -85,11 +85,11 @@ const streakLabel = computed(() => {
 <style scoped>
 .checkin-btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 18px; border-radius: 20px; border: 2px solid #ddd;
-  background: #fafafa; cursor: pointer; font-size: 14px;
-  transition: all .2s; color: #666;
+  padding: 8px 18px; border-radius: 20px; border: 2px solid var(--ht-border-light, #ddd);
+  background: var(--ht-bg-secondary, #fafafa); cursor: pointer; font-size: 14px;
+  transition: all .2s; color: var(--ht-text-secondary, #666);
 }
-.checkin-btn:hover { border-color: var(--halo-color-primary, #4A90D9); color: var(--halo-color-primary, #4A90D9); }
+.checkin-btn:hover { border-color: var(--ht-primary, #4A90D9); color: var(--ht-primary, #4A90D9); }
 .checkin-btn.checked {
   background: #e8f5e9; border-color: #4CAF50; color: #2E7D32;
 }
@@ -98,7 +98,7 @@ const streakLabel = computed(() => {
 .checkin-text { font-weight: 500; }
 .streak-badge {
   font-size: 11px; padding: 2px 8px; border-radius: 10px;
-  background: var(--halo-color-primary, #4A90D9); color: #fff;
+  background: var(--ht-primary, #4A90D9); color: #fff;
 }
 .checked .streak-badge { background: #4CAF50; }
 </style>

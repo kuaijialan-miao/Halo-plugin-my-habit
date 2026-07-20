@@ -275,28 +275,28 @@ function barHeight(count: number): string {
 
 <style scoped>
 .stats-page { padding: 24px; max-width: 800px; margin: 0 auto; }
-.stats-page h2 { font-size: 22px; color: #333; margin: 0 0 20px; }
+.stats-page h2 { font-size: 22px; color: var(--ht-text, #333); margin: 0 0 20px; }
 
 .overview-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
 .overview-card {
-  background: var(--halo-bg-secondary, #f5f5f5); border-radius: 12px;
+  background: var(--ht-bg-secondary, #f5f5f5); border-radius: 12px;
   padding: 16px; text-align: center;
 }
-.ov-value { font-size: 28px; font-weight: 700; color: var(--halo-color-primary, #4A90D9); }
+.ov-value { font-size: 28px; font-weight: 700; color: var(--ht-primary, #4A90D9); }
 .unit { font-size: 14px; font-weight: 400; }
-.ov-label { font-size: 12px; color: #888; margin-top: 4px; }
+.ov-label { font-size: 12px; color: var(--ht-text-tertiary, #888); margin-top: 4px; }
 
 .section { margin-bottom: 28px; }
-.section h3 { font-size: 16px; color: #444; margin-bottom: 12px; }
-.section-badge { font-size: 12px; color: #fff; background: var(--halo-color-primary, #4A90D9); padding: 2px 8px; border-radius: 10px; font-weight: 400; }
-.section-note, .empty-note { font-size: 13px; color: #999; margin-top: 8px; }
+.section h3 { font-size: 16px; color: var(--ht-text-secondary, #444); margin-bottom: 12px; }
+.section-badge { font-size: 12px; color: #fff; background: var(--ht-primary, #4A90D9); padding: 2px 8px; border-radius: 10px; font-weight: 400; }
+.section-note, .empty-note { font-size: 13px; color: var(--ht-text-muted, #999); margin-top: 8px; }
 
 /* 周热力图 */
 .week-heatmap { display: flex; gap: 6px; }
 .week-cell {
   flex: 1; height: 64px; border-radius: 8px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  color: #555; transition: transform .15s;
+  color: var(--ht-text-secondary, #555); transition: transform .15s;
 }
 .week-cell:hover { transform: translateY(-2px); }
 .cell-weekday { font-size: 11px; }
@@ -305,7 +305,7 @@ function barHeight(count: number): string {
 /* 柱状图 */
 .bar-chart {
   display: flex; gap: 2px; align-items: flex-end;
-  height: 160px; background: var(--halo-bg-secondary, #f5f5f5);
+  height: 160px; background: var(--ht-bg-secondary, #f5f5f5);
   border-radius: 8px; padding: 8px 4px; overflow-x: auto;
 }
 .bar-col {
@@ -314,17 +314,17 @@ function barHeight(count: number): string {
 }
 .bar {
   width: 80%; border-radius: 3px 3px 0 0;
-  background: var(--halo-color-primary, #4A90D9);
+  background: var(--ht-primary, #4A90D9);
   min-height: 2px; position: relative; transition: height .3s;
   display: flex; align-items: flex-start; justify-content: center;
 }
 .bar-label { font-size: 8px; color: #fff; padding-top: 2px; }
-.bar-date { font-size: 8px; color: #aaa; margin-top: 4px; transform: rotate(-45deg); white-space: nowrap; }
+.bar-date { font-size: 8px; color: var(--ht-text-muted, #aaa); margin-top: 4px; transform: rotate(-45deg); white-space: nowrap; }
 
 .detail-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.detail-table th { text-align: left; padding: 8px 12px; color: #888; font-weight: 500; border-bottom: 1px solid #eee; }
-.detail-table td { padding: 8px 12px; border-bottom: 1px solid #f5f5f5; }
-.detail-table tr.empty { color: #ccc; }
+.detail-table th { text-align: left; padding: 8px 12px; color: var(--ht-text-tertiary, #888); font-weight: 500; border-bottom: 1px solid var(--ht-border, #eee); }
+.detail-table td { padding: 8px 12px; border-bottom: 1px solid var(--ht-border, #f5f5f5); color: var(--ht-text, #333); }
+.detail-table tr.empty { color: var(--ht-text-muted, #ccc); }
 
-.loading-state { text-align: center; padding: 60px; color: #999; }
+.loading-state { text-align: center; padding: 60px; color: var(--ht-text-muted, #999); }
 </style>

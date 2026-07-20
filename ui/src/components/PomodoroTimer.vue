@@ -180,7 +180,7 @@ function switchMode(mode: PomodoroState) {
 .mode-indicator {
   display: flex;
   gap: 4px;
-  background: #f0f0f0;
+  background: var(--ht-bg-secondary, #f0f0f0);
   border-radius: 10px;
   padding: 4px;
 }
@@ -192,15 +192,15 @@ function switchMode(mode: PomodoroState) {
   font-size: 13px;
   cursor: pointer;
   background: transparent;
-  color: #666;
+  color: var(--ht-text-secondary, #666);
   transition: all 0.2s;
 }
 
 .mode-btn.active {
-  background: #fff;
-  color: #333;
+  background: var(--ht-bg, #fff);
+  color: var(--ht-text, #333);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px var(--ht-shadow, rgba(0,0,0,0.1));
 }
 
 .timer-display {
@@ -224,7 +224,7 @@ function switchMode(mode: PomodoroState) {
 
 .state-label {
   font-size: 12px;
-  color: #999;
+  color: var(--ht-text-muted, #999);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -279,11 +279,11 @@ function switchMode(mode: PomodoroState) {
 }
 
 .btn-ghost {
-  background: #f5f5f5;
-  color: #666;
+  background: var(--ht-bg-secondary, #f5f5f5);
+  color: var(--ht-text-secondary, #666);
 }
 .btn-ghost:hover {
-  background: #e8e8e8;
+  background: var(--ht-bg-hover, #e8e8e8);
 }
 
 .btn-sm {
@@ -295,7 +295,7 @@ function switchMode(mode: PomodoroState) {
   display: flex;
   gap: 32px;
   padding-top: 8px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--ht-border, #eee);
   width: 100%;
   justify-content: center;
 }
@@ -310,12 +310,12 @@ function switchMode(mode: PomodoroState) {
 .stat-value {
   font-size: 20px;
   font-weight: 700;
-  color: #333;
+  color: var(--ht-text, #333);
 }
 
 .stat-label {
   font-size: 11px;
-  color: #999;
+  color: var(--ht-text-muted, #999);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }

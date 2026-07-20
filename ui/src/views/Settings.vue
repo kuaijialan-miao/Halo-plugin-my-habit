@@ -9,6 +9,7 @@
  */
 import { ref, onMounted, watch } from 'vue'
 import { habitApi, checkInApi, pomodoroApi, taskApi } from '../api'
+import { useTheme, type ThemeMode } from '../composables/useTheme'
 
 // 设置项（从 localStorage 加载）
 interface Settings {
@@ -36,10 +37,18 @@ const saved = ref(false)
 const exporting = ref(false)
 const notifPermission = ref<NotificationPermission>('default')
 
+const { theme, resolvedTheme, setTheme } = useTheme()
+
 onMounted(() => {
   loadSettings()
   checkNotificationPermission()
 })
+
+const themeOptions: { label: string; value: ThemeMode }[] = [
+  { label: '浅色', value: 'light' },
+  { label: '深色', value: 'dark' },
+  { label: '跟随系统', value: 'auto' },
+]
 
 function loadSettings() {
   try {
@@ -219,6 +228,24 @@ async function exportData() {
       <span v-if="saved" class="save-success">已保存</span>
     </div>
 
+    <!-- 外观 -->
+    <section class="settings-section">
+      <h3>外观</h3>
+      <div class="theme-selector">
+        <button
+          v-for="opt in themeOptions"
+          :key="opt.value"
+          class="theme-option"
+          :class="{ active: theme === opt.value }"
+          @click="setTheme(opt.value)"
+        >
+          <span class="theme-icon">{{ opt.value === 'light' ? '☀️' : opt.value === 'dark' ? '🌙' : '🔄' }}</span>
+          <span>{{ opt.label }}</span>
+        </button>
+      </div>
+      <p class="theme-hint">当前生效：{{ resolvedTheme === 'dark' ? '深色模式' : '浅色模式' }}</p>
+    </section>
+
     <!-- 关于 -->
     <section class="settings-section about-section">
       <h3>关于</h3>
@@ -230,34 +257,36 @@ async function exportData() {
 
 <style scoped>
 .settings-page { padding: 24px; max-width: 640px; margin: 0 auto; }
-.settings-page h2 { font-size: 22px; color: #333; margin: 0 0 24px; }
+.settings-page h2 { font-size: 22px; color: var(--ht-text, #333); margin: 0 0 24px; }
 
 .settings-section {
-  background: var(--halo-bg-secondary, #f5f5f5); border-radius: 12px;
+  background: var(--ht-bg-secondary, #f5f5f5); border-radius: 12px;
   padding: 20px; margin-bottom: 20px;
 }
-.settings-section h3 { font-size: 16px; color: #444; margin: 0 0 16px; }
+.settings-section h3 { font-size: 16px; color: var(--ht-text-secondary, #444); margin: 0 0 16px; }
 
 .setting-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.setting-item label { display: block; font-size: 13px; color: #666; margin-bottom: 8px; }
+.setting-item label { display: block; font-size: 13px; color: var(--ht-text-secondary, #666); margin-bottom: 8px; }
 .input-group { display: flex; align-items: center; gap: 8px; }
 .stepper {
-  width: 32px; height: 32px; border-radius: 6px; border: 1px solid #ddd;
-  background: #fff; cursor: pointer; font-size: 16px; color: #555;
+  width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--ht-border-light, #ddd);
+  background: var(--ht-bg, #fff); cursor: pointer; font-size: 16px;
+  color: var(--ht-text-secondary, #555);
   display: flex; align-items: center; justify-content: center;
 }
-.stepper:hover { background: #f0f0f0; }
+.stepper:hover { background: var(--ht-bg-hover, #f0f0f0); }
 .num-input {
   width: 60px; height: 32px; text-align: center; border-radius: 6px;
-  border: 1px solid #ddd; font-size: 15px; font-weight: 600; outline: none;
+  border: 1px solid var(--ht-border-light, #ddd); font-size: 15px; font-weight: 600; outline: none;
+  background: var(--ht-bg, #fff); color: var(--ht-text, #333);
 }
-.num-input:focus { border-color: var(--halo-color-primary, #4A90D9); }
+.num-input:focus { border-color: var(--ht-primary, #4A90D9); }
 
 /* Toggle Switch */
 .toggle-list { display: flex; flex-direction: column; gap: 14px; }
 .toggle-item { display: flex; justify-content: space-between; align-items: center; }
-.toggle-label { font-size: 14px; color: #333; display: block; }
-.toggle-desc { font-size: 12px; color: #999; display: block; margin-top: 2px; }
+.toggle-label { font-size: 14px; color: var(--ht-text, #333); display: block; }
+.toggle-desc { font-size: 12px; color: var(--ht-text-muted, #999); display: block; margin-top: 2px; }
 .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider {
@@ -268,38 +297,59 @@ async function exportData() {
   content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px;
   background: #fff; border-radius: 50%; transition: .3s;
 }
-input:checked + .slider { background: var(--halo-color-primary, #4A90D9); }
+input:checked + .slider { background: var(--ht-primary, #4A90D9); }
 input:checked + .slider:before { transform: translateX(20px); }
 
 .notif-status {
   margin-top: 16px; display: flex; align-items: center; gap: 12px;
-  font-size: 13px; color: #888;
+  font-size: 13px; color: var(--ht-text-tertiary, #888);
 }
 .btn-permission {
-  padding: 6px 12px; border-radius: 6px; border: 1px solid var(--halo-color-primary, #4A90D9);
-  color: var(--halo-color-primary, #4A90D9); background: #fff; cursor: pointer; font-size: 12px;
+  padding: 6px 12px; border-radius: 6px; border: 1px solid var(--ht-primary, #4A90D9);
+  color: var(--ht-primary, #4A90D9); background: var(--ht-bg, #fff); cursor: pointer; font-size: 12px;
 }
-.btn-permission:hover { background: #e3f2fd; }
+.btn-permission:hover { background: var(--ht-primary-light, #e3f2fd); }
+
+/* Theme Selector */
+.theme-selector { display: flex; gap: 8px; }
+.theme-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 8px; border-radius: 10px;
+  border: 2px solid var(--ht-border-light, #ddd);
+  background: var(--ht-bg, #fff); cursor: pointer; font-size: 13px;
+  color: var(--ht-text-secondary, #666);
+  transition: all .2s;
+}
+.theme-option:hover { border-color: var(--ht-primary, #4A90D9); }
+.theme-option.active {
+  border-color: var(--ht-primary, #4A90D9);
+  background: var(--ht-primary-light, #e3f2fd);
+  color: var(--ht-primary, #4A90D9);
+}
+.theme-icon { font-size: 22px; }
+.theme-hint {
+  margin-top: 10px; font-size: 12px; color: var(--ht-text-muted, #999);
+}
 
 .btn-export {
-  padding: 10px 20px; border-radius: 8px; border: 1px solid var(--halo-color-primary, #4A90D9);
-  background: #fff; color: var(--halo-color-primary, #4A90D9); cursor: pointer;
+  padding: 10px 20px; border-radius: 8px; border: 1px solid var(--ht-primary, #4A90D9);
+  background: var(--ht-bg, #fff); color: var(--ht-primary, #4A90D9); cursor: pointer;
   font-size: 14px; transition: all .2s;
 }
-.btn-export:hover { background: #e3f2fd; }
+.btn-export:hover { background: var(--ht-primary-light, #e3f2fd); }
 .btn-export:disabled { opacity: .5; cursor: not-allowed; }
-.export-hint { font-size: 12px; color: #999; margin-top: 8px; }
+.export-hint { font-size: 12px; color: var(--ht-text-muted, #999); margin-top: 8px; }
 
 .save-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .btn-save {
   padding: 12px 32px; border-radius: 8px; border: none;
-  background: var(--halo-color-primary, #4A90D9); color: #fff; cursor: pointer;
+  background: var(--ht-primary, #4A90D9); color: #fff; cursor: pointer;
   font-size: 15px; font-weight: 500;
 }
 .btn-save:hover { opacity: .9; }
-.save-success { font-size: 14px; color: #4CAF50; }
+.save-success { font-size: 14px; color: var(--ht-success, #4CAF50); }
 
-.about-section { text-align: center; color: #888; font-size: 14px; }
+.about-section { text-align: center; color: var(--ht-text-tertiary, #888); font-size: 14px; }
 .about-section h3 { text-align: left; }
-.version { font-size: 12px; color: #bbb; }
+.version { font-size: 12px; color: var(--ht-text-muted, #bbb); }
 </style>

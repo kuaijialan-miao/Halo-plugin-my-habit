@@ -141,13 +141,13 @@ onMounted(() => {
 
 .page-header h2 {
   font-size: 22px;
-  color: #333;
+  color: var(--ht-text, #333);
   margin: 0 0 4px;
 }
 
 .subtitle {
   font-size: 13px;
-  color: #999;
+  color: var(--ht-text-muted, #999);
   margin: 0;
 }
 
@@ -162,7 +162,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #f8f8f8;
+  background: var(--ht-bg-secondary, #f8f8f8);
   border-radius: 12px;
   padding: 12px 24px;
   min-width: 80px;
@@ -177,7 +177,7 @@ onMounted(() => {
 
 .summary-label {
   font-size: 12px;
-  color: #999;
+  color: var(--ht-text-muted, #999);
   margin-top: 2px;
 }
 
@@ -187,13 +187,13 @@ onMounted(() => {
 
 .history-section h3 {
   font-size: 15px;
-  color: #333;
+  color: var(--ht-text, #333);
   margin: 0 0 12px;
 }
 
 .loading, .empty {
   text-align: center;
-  color: #999;
+  color: var(--ht-text-muted, #999);
   font-size: 13px;
   padding: 24px 0;
 }
@@ -209,7 +209,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  background: #fafafa;
+  background: var(--ht-bg-secondary, #fafafa);
   border-radius: 8px;
   font-size: 13px;
 }
@@ -239,12 +239,12 @@ onMounted(() => {
 }
 
 .history-time {
-  color: #555;
+  color: var(--ht-text-secondary, #555);
   flex: 1;
 }
 
 .history-duration {
-  color: #999;
+  color: var(--ht-text-muted, #999);
   font-size: 12px;
 }
 </style>
