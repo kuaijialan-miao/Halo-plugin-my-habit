@@ -1,16 +1,33 @@
 const BASE_URL = '/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-habit-tracker/api'
+const REQUEST_TIMEOUT_MS = 15000
 
+/**
+ * Day 38: 统一请求封装 + 超时控制
+ */
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const resp = await fetch(`${BASE_URL}${url}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
-  if (!resp.ok) {
-    const err = await resp.text()
-    throw new Error(`HTTP ${resp.status}: ${err}`)
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+
+  try {
+    const resp = await fetch(`${BASE_URL}${url}`, {
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      ...options,
+    })
+    if (!resp.ok) {
+      const err = await resp.text()
+      throw new Error(`HTTP ${resp.status}: ${err}`)
+    }
+    if (resp.status === 204) return undefined as T
+    return resp.json()
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('timeout: 请求超时，请重试')
+    }
+    throw err
+  } finally {
+    clearTimeout(timeoutId)
   }
-  if (resp.status === 204) return undefined as T
-  return resp.json()
 }
 
 export const api = {

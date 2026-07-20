@@ -3,8 +3,10 @@ import { ref, onMounted, computed } from 'vue'
 import { habitApi, checkInApi, pomodoroApi, taskApi } from '../api'
 import type { Habit } from '../api/types'
 import SkeletonLoader from '../components/SkeletonLoader.vue'
+import { useRetryableError, isNetworkError } from '../composables/useErrorHandler'
 
 const loading = ref(true)
+const { error, setError, clearError } = useRetryableError()
 const habitCount = ref(0)
 const todayCheckins = ref(0)
 const todayFocusMin = ref(0)
@@ -20,7 +22,9 @@ const todayStr = computed(() => {
   return d.toISOString().slice(0, 10)
 })
 
-onMounted(async () => {
+async function loadDashboard() {
+  loading.value = true
+  clearError()
   try {
     const [habitsList, checkins, pomodoros, tasks] = await Promise.all([
       habitApi.list(),
@@ -41,9 +45,13 @@ onMounted(async () => {
       const exists = checkins.some(c => c.spec.habitName === h.spec.name && c.spec.checkDate === todayStr.value)
       todayCheckMap.value[h.spec.name] = exists
     }
-  } catch { /* 后端未就绪 */ }
-  finally { loading.value = false }
-})
+  } catch (err) {
+    setError(err)
+    // 网络错误时保留骨架屏 UI，不吞掉错误信息
+  } finally { loading.value = false }
+}
+
+onMounted(loadDashboard)
 
 async function toggleCheckIn(habit: Habit) {
   const name = habit.spec.name
@@ -79,6 +87,13 @@ async function toggleCheckIn(habit: Habit) {
       </div>
       <SkeletonLoader type="list" :rows="3" />
     </template>
+
+    <!-- Day 38: 错误状态 + 重试 -->
+    <div v-else-if="error" class="error-state">
+      <div class="error-icon">&#9888;</div>
+      <p class="error-msg">{{ error.message }}</p>
+      <button v-if="error.retryable" class="retry-btn" @click="loadDashboard">重试</button>
+    </div>
 
     <template v-else>
     <div class="stats-grid">
@@ -192,4 +207,35 @@ async function toggleCheckIn(habit: Habit) {
   font-size: 14px; font-weight: 700; margin-left: 2px;
 }
 .checked .chip-status { color: var(--habit-color); }
+
+/* Day 38: 错误状态 */
+.error-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--ht-text-secondary, #666);
+}
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: var(--ht-warning, #e6a23c);
+}
+.error-msg {
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+.retry-btn {
+  display: inline-block;
+  padding: 8px 24px;
+  border-radius: 6px;
+  border: 1px solid var(--ht-primary, #4A90D9);
+  background: var(--ht-bg, #fff);
+  color: var(--ht-primary, #4A90D9);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all .2s;
+}
+.retry-btn:hover {
+  background: var(--ht-primary, #4A90D9);
+  color: #fff;
+}
 </style>
