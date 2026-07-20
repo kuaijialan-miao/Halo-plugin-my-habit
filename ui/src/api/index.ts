@@ -38,3 +38,9 @@ export const api = {
     request<T>(url, { method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
   del: <T>(url: string) => request<T>(url, { method: 'DELETE' }),
 }
+
+// Barrel re-exports for convenient imports: `import { habitApi } from '../api'`
+export { habitApi } from './habit'
+export { checkInApi } from './checkin'
+export { pomodoroApi } from './pomodoro'
+export { taskApi } from './task'

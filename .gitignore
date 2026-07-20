@@ -1,0 +1,22 @@
+# Dependencies
+ui/node_modules/
+
+# Build output (Java)
+build/
+.gradle/
+bin/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Halo data (docker)
+halo-data/

@@ -13,9 +13,10 @@ const props = defineProps<{
 }>()
 
 /** 图表骨架屏柱子高度：首次渲染时随机生成并固定，避免重渲染时跳动 */
-const barHeights = computed(() =>
-  Array.from({ length: 7 }, () => 30 + Math.random() * 60)
-)
+const barHeights: number[] = []
+for (let i = 0; i < 7; i++) {
+  barHeights.push(30 + Math.random() * 60)
+}
 </script>
 
 <template>

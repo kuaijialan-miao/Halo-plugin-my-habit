@@ -4,7 +4,7 @@
  * - 习惯列表 + 打卡按钮 + 连续天数
  * - 日历热力图
  */
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { habitApi, checkInApi } from '../api'
 import type { Habit } from '../api/types'
 import CheckInButton from '../components/CheckInButton.vue'

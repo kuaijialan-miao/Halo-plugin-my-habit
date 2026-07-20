@@ -25,7 +25,7 @@ spec:
       priority: 30
     - displayName: "数据统计"
       icon: "bar-chart"
-      href: "/console/habit-tracker/statistics"
+      href: "/console/habit-tracker/stats"
       priority: 40
     - displayName: "设置"
       icon: "settings"
