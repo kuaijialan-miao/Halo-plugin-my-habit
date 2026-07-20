@@ -17,6 +17,7 @@ const resolvedTheme = ref<'light' | 'dark'>('light')
 
 let styleEl: HTMLStyleElement | null = null
 let mediaQuery: MediaQueryList | null = null
+let themeInitialized = false
 
 function injectGlobalStyles() {
   if (styleEl) return
@@ -144,6 +145,8 @@ function resolveTheme(): 'light' | 'dark' {
 }
 
 function loadTheme() {
+  if (themeInitialized) return
+  themeInitialized = true
   try {
     const saved = localStorage.getItem(THEME_KEY)
     if (saved && ['light', 'dark', 'auto'].includes(saved)) {
@@ -169,6 +172,7 @@ function toggleTheme() {
 }
 
 function setupSystemListener() {
+  if (mediaQuery) return // already set up by initTheme()
   mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
   const handler = () => {
     if (theme.value === 'auto') {

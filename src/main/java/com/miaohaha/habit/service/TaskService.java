@@ -68,9 +68,12 @@ public class TaskService {
                     ? ((Number) item.get("sortOrder")).intValue() : 0;
                 return client.fetch(Task.class, name)
                     .flatMap(t -> {
+                        if (t.getSpec() == null) {
+                            return Mono.<Void>empty();
+                        }
                         t.getSpec().setSortOrder(sortOrder);
                         t.getSpec().setUpdatedAt(java.time.Instant.now());
-                        return client.update(t);
+                        return client.update(t).then();
                     });
             })
             .then();

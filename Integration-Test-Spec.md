@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: 8b0b5ee7b6380cef0b20b46d12aedfa5_88ce54ba83ed11f1b625525400e6dd8f
+    ReservedCode1: 9buWX/i18lh2wfFs+03ipFcbYFGIrwb7kofDbtvigY5EDsoZdbIr9K8gp1s2S00nxk506iw6bLwBxaIlLOLt/Ru/c6BVFb5FBoiPadaS/BJ9TXikuz1rI7v+2pLJKWT5vFALn0tDwJxJx5sZ6bbWc1So2Q8D+bI1NWLDtsbGLSuu4JpFhfYtDny6Vc8=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: 8b0b5ee7b6380cef0b20b46d12aedfa5_88ce54ba83ed11f1b625525400e6dd8f
+    ReservedCode2: 9buWX/i18lh2wfFs+03ipFcbYFGIrwb7kofDbtvigY5EDsoZdbIr9K8gp1s2S00nxk506iw6bLwBxaIlLOLt/Ru/c6BVFb5FBoiPadaS/BJ9TXikuz1rI7v+2pLJKWT5vFALn0tDwJxJx5sZ6bbWc1So2Q8D+bI1NWLDtsbGLSuu4JpFhfYtDny6Vc8=
+---
+
 # Integration Test Specification — Week 4 (Day 27)
 
 > 版本：v1.0 | 日期：2026-07-20
@@ -78,3 +89,4 @@
 | L1 | 拖拽排序 + 多用户并发 | 单用户场景无冲突，未来需乐观锁 |
 | L2 | 30 天无打卡数据的折线图视觉 | 全 0 折线贴合 X 轴底部，可接受 |
 | L3 | `checkInApi.list(habit)` query 参数 | 依赖后端 query string 解析正确 |
+*（内容由AI生成，仅供参考）*
