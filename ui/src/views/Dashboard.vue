@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { habitApi, checkInApi, pomodoroApi, taskApi } from '../api'
-import type { Habit, CheckInRecord } from '../api/types'
+import type { Habit } from '../api/types'
 import SkeletonLoader from '../components/SkeletonLoader.vue'
 
 const loading = ref(true)

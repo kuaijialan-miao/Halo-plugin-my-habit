@@ -3,12 +3,19 @@
  * Day 31: 骨架屏加载组件
  * 提供多种骨架屏变体，用于提升加载体验
  */
-defineProps<{
+import { computed } from 'vue'
+
+const props = defineProps<{
   /** 骨架屏类型 */
   type?: 'card' | 'list' | 'chart' | 'table' | 'text'
   /** 重复行数（list/table 类型有效） */
   rows?: number
 }>()
+
+/** 图表骨架屏柱子高度：首次渲染时随机生成并固定，避免重渲染时跳动 */
+const barHeights = computed(() =>
+  Array.from({ length: 7 }, () => 30 + Math.random() * 60)
+)
 </script>
 
 <template>
@@ -34,7 +41,7 @@ defineProps<{
   <div v-else-if="type === 'chart'" class="skel-chart">
     <div class="skel-line skel-short skel-chart-title"></div>
     <div class="skel-chart-area">
-      <div class="skel-bar" v-for="i in 7" :key="i" :style="{ height: (30 + Math.random() * 60) + '%' }"></div>
+      <div class="skel-bar" v-for="(h, i) in barHeights" :key="i" :style="{ height: h + '%' }"></div>
     </div>
   </div>
 

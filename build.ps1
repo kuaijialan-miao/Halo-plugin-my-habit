@@ -24,7 +24,7 @@ finally { Pop-Location }
 
 # Step 2: Build backend
 Write-Host "[2/3] Building backend (Gradle + Spring Boot)..." -ForegroundColor Yellow
-$gradleArgs = "build", "-x", "test"
+$gradleArgs = @("build")
 if ($Release) { $gradleArgs += "-Prelease=true" }
 if ($SkipTests) { $gradleArgs += "-x", "test" }
 

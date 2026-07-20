@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: 8b0b5ee7b6380cef0b20b46d12aedfa5_3d4a0c2883f711f184135254006c9bbf
+    ReservedCode1: CfxU4Y7fWEFx5ectaQnhYQIPx73JBqMhOX9QucgURPJ5ZRVAAEDa5C16gDM1Utro2F0xdnb0NtEa2vFjMC0j7p3G24l103ynslyDwLJ2pDWlDtuadhSnarEUv2XOLsH0A90QNcmfzuBfNALZCenMeGqDttwasgtnRS+mhOHfJXlncY11xSVJ/8X74VU=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: 8b0b5ee7b6380cef0b20b46d12aedfa5_3d4a0c2883f711f184135254006c9bbf
+    ReservedCode2: CfxU4Y7fWEFx5ectaQnhYQIPx73JBqMhOX9QucgURPJ5ZRVAAEDa5C16gDM1Utro2F0xdnb0NtEa2vFjMC0j7p3G24l103ynslyDwLJ2pDWlDtuadhSnarEUv2XOLsH0A90QNcmfzuBfNALZCenMeGqDttwasgtnRS+mhOHfJXlncY11xSVJ/8X74VU=
+---
+
 # Halo 自律打卡插件 — 部署指南
 
 > 版本：1.0.0-SNAPSHOT | 更新：2026-07-20
@@ -82,3 +93,4 @@
 | 持久化 | Halo Extension Store (JPA/H2) |
 | 主题 | 50+ CSS 自定义属性 + OS 主题跟随 |
 | 可视化 | SVG 折线图 + CSS Grid 热力图（零依赖） |
+*（内容由AI生成，仅供参考）*
