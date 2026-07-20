@@ -1,15 +1,16 @@
 import { definePlugin } from "@halo-dev/console-shared";
-import { markRaw } from "vue";
 import { initTheme } from "./composables/useTheme";
-import Dashboard from "./views/Dashboard.vue";
 
 // Initialize theme system
 initTheme();
-import Pomodoro from "./views/Pomodoro.vue";
-import Habits from "./views/Habits.vue";
-import Tasks from "./views/Tasks.vue";
-import Statistics from "./views/Statistics.vue";
-import Settings from "./views/Settings.vue";
+
+// 路由级懒加载：按需加载视图组件，减小首屏 bundle 体积
+const Dashboard = () => import("./views/Dashboard.vue");
+const Pomodoro = () => import("./views/Pomodoro.vue");
+const Habits = () => import("./views/Habits.vue");
+const Tasks = () => import("./views/Tasks.vue");
+const Statistics = () => import("./views/Statistics.vue");
+const Settings = () => import("./views/Settings.vue");
 
 export default definePlugin({
   components: {},
@@ -22,7 +23,7 @@ export default definePlugin({
           {
             path: "",
             name: "HabitDashboard",
-            component: markRaw(Dashboard),
+            component: Dashboard,
             meta: {
               title: "仪表盘",
               searchable: true,
@@ -37,7 +38,7 @@ export default definePlugin({
           {
             path: "pomodoro",
             name: "HabitPomodoro",
-            component: markRaw(Pomodoro),
+            component: Pomodoro,
             meta: {
               title: "番茄钟",
               searchable: true,
@@ -52,7 +53,7 @@ export default definePlugin({
           {
             path: "habits",
             name: "HabitHabits",
-            component: markRaw(Habits),
+            component: Habits,
             meta: {
               title: "习惯打卡",
               searchable: true,
@@ -67,7 +68,7 @@ export default definePlugin({
           {
             path: "tasks",
             name: "HabitTasks",
-            component: markRaw(Tasks),
+            component: Tasks,
             meta: {
               title: "任务管理",
               searchable: true,
@@ -82,7 +83,7 @@ export default definePlugin({
           {
             path: "stats",
             name: "HabitStats",
-            component: markRaw(Statistics),
+            component: Statistics,
             meta: {
               title: "数据统计",
               searchable: true,
@@ -97,7 +98,7 @@ export default definePlugin({
           {
             path: "settings",
             name: "HabitSettings",
-            component: markRaw(Settings),
+            component: Settings,
             meta: {
               title: "设置",
               searchable: true,
