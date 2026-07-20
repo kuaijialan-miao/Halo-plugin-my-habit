@@ -124,6 +124,39 @@ function getDarkStyles(): string {
       background: #3f3f46;
       border-radius: 6px;
     }
+
+    /* ===== Day 32: Focus-visible 无障碍样式 ===== */
+    :focus-visible {
+      outline: 2px solid var(--ht-primary, #4A90D9) !important;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* 为可聚焦元素提供明显焦点指示 */
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ht-primary, #4A90D9) 30%, transparent);
+    }
+
+    /* 隐藏默认 outline（由上述 focus-visible 替代） */
+    :focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    /* 跳过导航链接（对屏幕阅读器友好） */
+    .ht-skip-link {
+      position: absolute; top: -100px; left: 8px;
+      background: var(--ht-primary, #4A90D9); color: #fff;
+      padding: 8px 16px; border-radius: 6px; z-index: 9999;
+      font-size: 14px; text-decoration: none;
+    }
+    .ht-skip-link:focus {
+      top: 8px;
+    }
   `
 }
 

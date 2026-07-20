@@ -1,19 +1,30 @@
 <script setup lang="ts">
 /**
- * Day 19: 统计页面数据可视化
- * - 本周/本月打卡统计
- * - 习惯打卡热力图（内联，复用 HeatmapCalendar 逻辑）
- * - 番茄钟趋势（7天/30天柱状图）
+ * Day 19 + Day 23 + Day 29: 统计页面数据可视化
+ * - 本周打卡热力图
+ * - 番茄钟趋势柱状图
+ * - SVG 折线趋势图（贝塞尔平滑曲线 + 7/14/30/90 天范围选择）
  * - 总览数字卡片
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { habitApi, checkInApi, pomodoroApi, taskApi } from '../api'
 import type { Habit, Pomodoro, Task } from '../api/types'
+import SkeletonLoader from '../components/SkeletonLoader.vue'
 
 const loading = ref(true)
 const habits = ref<Habit[]>([])
 const pomodoros = ref<Pomodoro[]>([])
 const tasks = ref<Task[]>([])
+
+// ========== 趋势图日期范围选择 (Day 29) ==========
+type TrendRange = 7 | 14 | 30 | 90
+const trendRange = ref<TrendRange>(30)
+const trendRangeOptions: { label: string; value: TrendRange }[] = [
+  { label: '7天', value: 7 },
+  { label: '14天', value: 14 },
+  { label: '30天', value: 30 },
+  { label: '90天', value: 90 },
+]
 
 // 周打卡热力图数据
 interface DayCell {
@@ -69,14 +80,17 @@ onMounted(async () => {
   }
 })
 
+// 范围切换时重新加载趋势数据
+watch(trendRange, async () => {
+  await loadTrendData()
+})
+
 async function loadWeekData() {
-  // 本周 7 天打卡汇总
   const today = new Date()
   const cells: DayCell[] = []
   const weekNames = ['日', '一', '二', '三', '四', '五', '六']
 
-  // 获取所有习惯的所有打卡
-  const allCheckins = new Map<string, number>() // date -> count
+  const allCheckins = new Map<string, number>()
   for (const habit of habits.value) {
     try {
       const checkins = await checkInApi.list(habit.spec.name)
@@ -152,8 +166,8 @@ async function loadPomodoroTrends() {
 async function loadTrendData() {
   const today = new Date()
   const dayMap = new Map<string, number>()
+  const days = trendRange.value
 
-  // 汇总所有习惯近 30 天的打卡
   for (const habit of habits.value) {
     try {
       const checkins = await checkInApi.list(habit.spec.name)
@@ -165,13 +179,13 @@ async function loadTrendData() {
   }
 
   const data: TrendPoint[] = []
-  for (let i = 29; i >= 0; i--) {
+  for (let i = days - 1; i >= 0; i--) {
     const d = new Date(today)
     d.setDate(d.getDate() - i)
     const dateStr = d.toISOString().slice(0, 10)
     data.push({ date: dateStr, count: dayMap.get(dateStr) || 0 })
   }
-  trend30Days.value = data
+  trendData.value = data
 }
 
 function computeTotals() {
@@ -194,25 +208,57 @@ function computeTotals() {
 
 const heatLevelColors = ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127']
 
-// ========== SVG 折线趋势图 (Day 23) ==========
+// ========== SVG 折线趋势图 (Day 23 + Day 29) ==========
 
 interface TrendPoint {
   date: string
   count: number
 }
 
-const trend30Days = ref<TrendPoint[]>([])
+const trendData = ref<TrendPoint[]>([])
+
+/**
+ * Catmull-Rom → Cubic Bezier 平滑曲线路径生成
+ * 参考: https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline
+ */
+function buildSmoothPath(
+  points: { x: number; y: number }[],
+): string {
+  if (points.length < 2) return ''
+  if (points.length === 2) {
+    return `M${points[0].x},${points[0].y} L${points[1].x},${points[1].y}`
+  }
+
+  const tension = 0.3 // 平滑力度 (0=直线, 1=最大曲率)
+  let d = `M${points[0].x},${points[0].y}`
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(0, i - 1)]
+    const p1 = points[i]
+    const p2 = points[i + 1]
+    const p3 = points[Math.min(points.length - 1, i + 2)]
+
+    const cp1x = p1.x + (p2.x - p0.x) * tension
+    const cp1y = p1.y + (p2.y - p0.y) * tension
+    const cp2x = p2.x - (p3.x - p1.x) * tension
+    const cp2y = p2.y - (p3.y - p1.y) * tension
+
+    d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`
+  }
+
+  return d
+}
 
 const chartConfig = computed(() => {
-  const data = trend30Days.value
+  const data = trendData.value
   if (!data.length) return null
 
   const W = 740
-  const H = 180
-  const PAD_L = 36
-  const PAD_R = 12
-  const PAD_T = 12
-  const PAD_B = 28
+  const H = 200
+  const PAD_L = 40
+  const PAD_R = 16
+  const PAD_T = 16
+  const PAD_B = 32
   const PLOT_W = W - PAD_L - PAD_R
   const PLOT_H = H - PAD_T - PAD_B
 
@@ -220,22 +266,33 @@ const chartConfig = computed(() => {
   const yMax = Math.ceil(maxVal * 1.2) || 5
 
   const points = data.map((d, i) => {
-    const x = PAD_L + (i / (data.length - 1)) * PLOT_W
+    const x = PAD_L + (i / Math.max(data.length - 1, 1)) * PLOT_W
     const y = PAD_T + PLOT_H - (d.count / yMax) * PLOT_H
     return { x, y, ...d }
   })
 
-  const polyline = points.map(p => `${p.x},${p.y}`).join(' ')
+  // 平滑曲线路径
+  const smoothPath = buildSmoothPath(points)
 
   // 生成 Y 轴刻度
   const yTicks = [0, Math.round(yMax / 2), yMax]
 
-  // 生成 X 轴标签（每 5 天一个）
+  // 生成 X 轴标签（自适应间距）
+  const n = data.length
+  let xStep: number
+  if (n <= 7) xStep = 1
+  else if (n <= 14) xStep = 2
+  else if (n <= 30) xStep = 5
+  else xStep = 10
+
   const xLabels = data
     .map((d, i) => ({ label: d.date.slice(5), index: i }))
-    .filter((_, i) => i % 5 === 0 || i === data.length - 1)
+    .filter((_, i) => i % xStep === 0 || i === n - 1)
 
-  return { W, H, PAD_L, PAD_R, PAD_T, PAD_B, PLOT_W, PLOT_H, points, polyline, yTicks, xLabels, yMax }
+  return {
+    W, H, PAD_L, PAD_R, PAD_T, PAD_B, PLOT_W, PLOT_H,
+    points, smoothPath, yTicks, xLabels, yMax, dataCount: n,
+  }
 })
 
 const chartHover = ref<{ x: number; y: number; date: string; count: number } | null>(null)
@@ -252,7 +309,6 @@ const maxPomoCount = computed(() => {
   return Math.max(...all, 1)
 })
 
-// 格式化日期标签（月/日）
 function formatLabel(dateStr: string): string {
   return dateStr.slice(5)
 }
@@ -286,18 +342,44 @@ function barHeight(count: number): string {
       </div>
     </div>
 
-    <div v-if="loading" class="loading-state">加载中...</div>
+    <div v-if="loading" class="loading-state">
+      <div class="skel-grid">
+        <SkeletonLoader type="card" v-for="i in 4" :key="i" />
+      </div>
+      <SkeletonLoader type="chart" />
+      <SkeletonLoader type="chart" style="margin-top:16px" />
+    </div>
 
     <template v-else>
-      <!-- 打卡趋势折线图 (Day 23) -->
+      <!-- 打卡趋势折线图 (Day 23 + Day 29) -->
       <section class="section" v-if="chartConfig">
-        <h3>打卡趋势（近 30 天）</h3>
+        <div class="section-header">
+          <h3>打卡趋势</h3>
+          <div class="range-selector">
+            <button
+              v-for="opt in trendRangeOptions"
+              :key="opt.value"
+              class="range-btn"
+              :class="{ active: trendRange === opt.value }"
+              @click="trendRange = opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </div>
         <div class="trend-chart">
           <svg
             :viewBox="`0 0 ${chartConfig.W} ${chartConfig.H}`"
             class="trend-svg"
             @mouseleave="hideTooltip"
           >
+            <defs>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--ht-primary, #4A90D9)" stop-opacity="0.15" />
+                <stop offset="100%" stop-color="var(--ht-primary, #4A90D9)" stop-opacity="0.0" />
+              </linearGradient>
+            </defs>
+
             <!-- 网格线 -->
             <line
               v-for="tick in chartConfig.yTicks"
@@ -312,14 +394,21 @@ function barHeight(count: number): string {
             <text
               v-for="tick in chartConfig.yTicks"
               :key="'y-' + tick"
-              :x="chartConfig.PAD_L - 6"
+              :x="chartConfig.PAD_L - 8"
               :y="chartConfig.PAD_T + chartConfig.PLOT_H - (tick / chartConfig.yMax) * chartConfig.PLOT_H + 4"
               class="y-label"
             >{{ tick }}</text>
 
-            <!-- 折线 -->
-            <polyline
-              :points="chartConfig.polyline"
+            <!-- 面积渐变填充 -->
+            <path
+              v-if="chartConfig.points.length > 1"
+              :d="chartConfig.smoothPath + ' L' + chartConfig.points[chartConfig.points.length - 1].x + ',' + (chartConfig.PAD_T + chartConfig.PLOT_H) + ' L' + chartConfig.points[0].x + ',' + (chartConfig.PAD_T + chartConfig.PLOT_H) + ' Z'"
+              fill="url(#areaGrad)"
+            />
+
+            <!-- 平滑曲线路径 -->
+            <path
+              :d="chartConfig.smoothPath"
               class="trend-line"
             />
 
@@ -329,7 +418,7 @@ function barHeight(count: number): string {
               :key="'dot-' + idx"
               :cx="pt.x"
               :cy="pt.y"
-              r="3"
+              r="2.5"
               class="trend-dot"
               :class="{ 'has-value': pt.count > 0 }"
               @mouseenter="showTooltip(pt)"
@@ -338,25 +427,25 @@ function barHeight(count: number): string {
             <!-- Tooltip -->
             <g v-if="chartHover">
               <rect
-                :x="chartHover.x - 36"
-                :y="chartHover.y - 32"
-                width="72"
-                height="22"
+                :x="Math.min(Math.max(chartHover.x - 40, chartConfig.PAD_L - 10), chartConfig.W - chartConfig.PAD_R - 60)"
+                :y="chartHover.y - 34"
+                width="80"
+                height="24"
                 rx="4"
                 class="tooltip-bg"
               />
               <text
-                :x="chartHover.x"
-                :y="chartHover.y - 16"
+                :x="Math.min(Math.max(chartHover.x, chartConfig.PAD_L + 40), chartConfig.W - chartConfig.PAD_R - 20)"
+                :y="chartHover.y - 18"
                 class="tooltip-text"
-              >{{ chartHover.date }}: {{ chartHover.count }}次</text>
+              >{{ chartHover.date.slice(5) }} · {{ chartHover.count }}次</text>
             </g>
 
             <!-- X 轴标签 -->
             <text
               v-for="xl in chartConfig.xLabels"
               :key="'xl-' + xl.index"
-              :x="chartConfig.PAD_L + (xl.index / (chartConfig.points.length - 1)) * chartConfig.PLOT_W"
+              :x="chartConfig.PAD_L + (xl.index / Math.max(chartConfig.points.length - 1, 1)) * chartConfig.PLOT_W"
               :y="chartConfig.H - 6"
               class="x-label"
             >{{ xl.label }}</text>
@@ -445,6 +534,28 @@ function barHeight(count: number): string {
 .section-badge { font-size: 12px; color: #fff; background: var(--ht-primary, #4A90D9); padding: 2px 8px; border-radius: 10px; font-weight: 400; }
 .section-note, .empty-note { font-size: 13px; color: var(--ht-text-muted, #999); margin-top: 8px; }
 
+/* ===== 范围选择器 (Day 29) ===== */
+.section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+}
+.section-header h3 { margin-bottom: 0; }
+.range-selector {
+  display: flex; gap: 4px;
+  background: var(--ht-bg-secondary, #f0f0f0);
+  border-radius: 8px; padding: 3px;
+}
+.range-btn {
+  padding: 5px 12px; border: none; border-radius: 6px;
+  background: transparent; color: var(--ht-text-secondary, #666);
+  font-size: 12px; cursor: pointer; transition: all .2s;
+}
+.range-btn:hover { color: var(--ht-text, #333); }
+.range-btn.active {
+  background: var(--ht-bg, #fff); color: var(--ht-primary, #4A90D9);
+  font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1);
+}
+
 /* 周热力图 */
 .week-heatmap { display: flex; gap: 6px; }
 .week-cell {
@@ -480,9 +591,10 @@ function barHeight(count: number): string {
 .detail-table td { padding: 8px 12px; border-bottom: 1px solid var(--ht-border, #f5f5f5); color: var(--ht-text, #333); }
 .detail-table tr.empty { color: var(--ht-text-muted, #ccc); }
 
-.loading-state { text-align: center; padding: 60px; color: var(--ht-text-muted, #999); }
+.loading-state { padding: 0; }
+.skel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
 
-/* SVG 折线图 (Day 23) */
+/* ===== SVG 折线图 (Day 23 + Day 29) ===== */
 .trend-chart {
   background: var(--ht-bg-secondary, #f5f5f5);
   border-radius: 10px;
@@ -507,28 +619,28 @@ function barHeight(count: number): string {
 .trend-line {
   fill: none;
   stroke: var(--ht-primary, #4A90D9);
-  stroke-width: 2;
+  stroke-width: 2.5;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 .trend-dot {
   fill: var(--ht-bg-secondary, #f5f5f5);
   stroke: var(--ht-primary, #4A90D9);
-  stroke-width: 2;
+  stroke-width: 1.5;
   cursor: pointer;
   transition: r .15s;
 }
-.trend-dot:hover { r: 5; }
+.trend-dot:hover { r: 4.5; }
 .trend-dot.has-value {
   fill: var(--ht-primary, #4A90D9);
   stroke: var(--ht-primary, #4A90D9);
 }
 .tooltip-bg {
   fill: var(--ht-text, #333);
-  opacity: .85;
+  opacity: .88;
 }
 .tooltip-text {
-  font-size: 10px; fill: #fff;
+  font-size: 10.5px; fill: #fff;
   text-anchor: middle;
 }
 </style>

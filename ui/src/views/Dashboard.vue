@@ -2,7 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { habitApi, checkInApi, pomodoroApi, taskApi } from '../api'
 import type { Habit, CheckInRecord } from '../api/types'
+import SkeletonLoader from '../components/SkeletonLoader.vue'
 
+const loading = ref(true)
 const habitCount = ref(0)
 const todayCheckins = ref(0)
 const todayFocusMin = ref(0)
@@ -40,6 +42,7 @@ onMounted(async () => {
       todayCheckMap.value[h.spec.name] = exists
     }
   } catch { /* 后端未就绪 */ }
+  finally { loading.value = false }
 })
 
 async function toggleCheckIn(habit: Habit) {
@@ -69,6 +72,15 @@ async function toggleCheckIn(habit: Habit) {
 
 <template>
   <div class="dashboard">
+    <!-- Day 31: 骨架屏加载状态 -->
+    <template v-if="loading">
+      <div class="stats-grid">
+        <SkeletonLoader type="card" v-for="i in 4" :key="i" />
+      </div>
+      <SkeletonLoader type="list" :rows="3" />
+    </template>
+
+    <template v-else>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">📋</div>
@@ -114,7 +126,7 @@ async function toggleCheckIn(habit: Habit) {
 
     <div class="quick-links">
       <h3>快捷入口</h3>
-      <div class="link-grid">
+      <nav class="link-grid" aria-label="功能快捷入口">
         <router-link to="/habit-tracker/pomodoro" class="link-card">
           <span class="link-icon">🍅</span><span>开始番茄钟</span>
         </router-link>
@@ -127,8 +139,9 @@ async function toggleCheckIn(habit: Habit) {
         <router-link to="/habit-tracker/stats" class="link-card">
           <span class="link-icon">📊</span><span>查看统计</span>
         </router-link>
-      </div>
+      </nav>
     </div>
+    </template>
   </div>
 </template>
 

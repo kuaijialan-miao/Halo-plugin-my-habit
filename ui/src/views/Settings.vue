@@ -35,6 +35,8 @@ const defaultSettings: Settings = {
 const settings = ref<Settings>({ ...defaultSettings })
 const saved = ref(false)
 const exporting = ref(false)
+const importing = ref(false)
+const importResult = ref<{ success: number; skipped: number; failed: number } | null>(null)
 const notifPermission = ref<NotificationPermission>('default')
 
 const { theme, resolvedTheme, setTheme } = useTheme()
@@ -118,6 +120,87 @@ async function exportData() {
     console.error('Export failed:', e)
   } finally {
     exporting.value = false
+  }
+}
+
+/**
+ * Day 30: 数据导入（JSON 恢复）
+ * 导入顺序：Habits → Checkins → Pomodoros → Tasks
+ */
+async function importData(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  importing.value = true
+  importResult.value = null
+
+  try {
+    const text = await file.text()
+    const data = JSON.parse(text)
+
+    // 校验基本结构
+    if (!data || typeof data !== 'object') {
+      throw new Error('无效的备份文件格式')
+    }
+
+    const result = { success: 0, skipped: 0, failed: 0 }
+
+    // Phase 1: 导入习惯
+    const habits: unknown[] = Array.isArray(data.habits) ? data.habits : []
+    for (const h of habits) {
+      try {
+        const habit = h as { spec?: { name?: string } }
+        if (!habit.spec?.name) { result.skipped++; continue }
+        await habitApi.create(habit as Parameters<typeof habitApi.create>[0])
+        result.success++
+      } catch {
+        result.skipped++ // 可能已存在
+      }
+    }
+
+    // Phase 2: 导入打卡记录
+    const checkins: unknown[] = Array.isArray(data.checkins) ? data.checkins : []
+    for (const c of checkins) {
+      try {
+        const ci = c as { spec?: { habitName?: string; checkDate?: string } }
+        if (!ci.spec?.habitName) { result.skipped++; continue }
+        await checkInApi.create(ci as Parameters<typeof checkInApi.create>[0])
+        result.success++
+      } catch {
+        result.skipped++
+      }
+    }
+
+    // Phase 3: 导入番茄记录
+    const pomodoros: unknown[] = Array.isArray(data.pomodoros) ? data.pomodoros : []
+    for (const p of pomodoros) {
+      try {
+        await pomodoroApi.create(p as Parameters<typeof pomodoroApi.create>[0])
+        result.success++
+      } catch {
+        result.skipped++
+      }
+    }
+
+    // Phase 4: 导入任务
+    const tasks: unknown[] = Array.isArray(data.tasks) ? data.tasks : []
+    for (const t of tasks) {
+      try {
+        await taskApi.create(t as Parameters<typeof taskApi.create>[0])
+        result.success++
+      } catch {
+        result.skipped++
+      }
+    }
+
+    importResult.value = result
+  } catch (e) {
+    console.error('Import failed:', e)
+    importResult.value = { success: 0, skipped: 0, failed: 1 }
+  } finally {
+    importing.value = false
+    input.value = '' // 允许重复导入同一文件
   }
 }
 </script>
@@ -216,10 +299,27 @@ async function exportData() {
     <!-- 数据管理 -->
     <section class="settings-section">
       <h3>数据管理</h3>
-      <button class="btn-export" @click="exportData" :disabled="exporting">
-        {{ exporting ? '导出中...' : '导出所有数据 (JSON)' }}
-      </button>
+      <div class="data-actions">
+        <button class="btn-export" @click="exportData" :disabled="exporting">
+          {{ exporting ? '导出中...' : '导出所有数据 (JSON)' }}
+        </button>
+        <label class="btn-import" :class="{ disabled: importing }">
+          {{ importing ? '导入中...' : '导入备份 (JSON)' }}
+          <input
+            type="file"
+            accept=".json"
+            class="file-input-hidden"
+            @change="importData"
+            :disabled="importing"
+          />
+        </label>
+      </div>
       <p class="export-hint">导出包含习惯、打卡记录、番茄记录和任务数据</p>
+      <div v-if="importResult" class="import-result">
+        <span class="result-ok">成功 {{ importResult.success }}</span>
+        <span v-if="importResult.skipped > 0" class="result-skip">跳过 {{ importResult.skipped }}</span>
+        <span v-if="importResult.failed > 0" class="result-fail">失败 {{ importResult.failed }}</span>
+      </div>
     </section>
 
     <!-- 保存按钮 -->
@@ -331,6 +431,7 @@ input:checked + .slider:before { transform: translateX(20px); }
   margin-top: 10px; font-size: 12px; color: var(--ht-text-muted, #999);
 }
 
+.data-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .btn-export {
   padding: 10px 20px; border-radius: 8px; border: 1px solid var(--ht-primary, #4A90D9);
   background: var(--ht-bg, #fff); color: var(--ht-primary, #4A90D9); cursor: pointer;
@@ -338,7 +439,26 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 .btn-export:hover { background: var(--ht-primary-light, #e3f2fd); }
 .btn-export:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 导入按钮 (Day 30) */
+.btn-import {
+  display: inline-flex; align-items: center; padding: 10px 20px; border-radius: 8px;
+  border: 1px dashed var(--ht-primary, #4A90D9);
+  background: var(--ht-bg, #fff); color: var(--ht-primary, #4A90D9); cursor: pointer;
+  font-size: 14px; transition: all .2s; position: relative;
+}
+.btn-import:hover { background: var(--ht-primary-light, #e3f2fd); }
+.btn-import.disabled { opacity: .5; cursor: not-allowed; }
+.file-input-hidden { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+
 .export-hint { font-size: 12px; color: var(--ht-text-muted, #999); margin-top: 8px; }
+
+.import-result {
+  margin-top: 10px; display: flex; gap: 12px; font-size: 13px;
+}
+.result-ok { color: var(--ht-success, #4CAF50); }
+.result-skip { color: var(--ht-warning, #FF9800); }
+.result-fail { color: var(--ht-danger, #F44336); }
 
 .save-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .btn-save {
