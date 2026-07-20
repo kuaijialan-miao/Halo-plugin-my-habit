@@ -26,6 +26,7 @@ export interface CheckIn {
 
 export interface PomodoroSpec {
   mode: 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK'
+  duration: number
   startTime: string
   endTime: string | null
   taskName: string
@@ -34,6 +35,11 @@ export interface PomodoroSpec {
 export interface Pomodoro {
   metadata: { name: string }
   spec: PomodoroSpec
+}
+
+export interface PomodoroTodayStats {
+  focusCount: number
+  totalFocusMinutes: number
 }
 
 export interface TaskSpec {
