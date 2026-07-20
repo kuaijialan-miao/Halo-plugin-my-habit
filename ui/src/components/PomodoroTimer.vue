@@ -94,18 +94,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import ProgressRing from './ProgressRing.vue'
 import { usePomodoro, type UsePomodoroReturn } from '../composables/usePomodoro'
 import type { PomodoroState } from '../composables/pomodoroStateMachine'
-import { DEFAULT_CONFIG } from '../composables/pomodoroStateMachine'
 
 const emit = defineEmits<{
   (e: 'focusComplete', count: number): void
   (e: 'stateChange', state: PomodoroState): void
 }>()
-
-const longBreakInterval = DEFAULT_CONFIG.longBreakInterval
 
 const pomodoro: UsePomodoroReturn = usePomodoro()
 
@@ -115,6 +112,7 @@ const {
   formattedTime,
   focusCount,
   totalFocusToday,
+  longBreakInterval,
   startFocus,
   pause,
   resume,

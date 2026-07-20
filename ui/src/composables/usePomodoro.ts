@@ -13,9 +13,7 @@ import type { WorkerResponse } from './pomodoro.worker'
 import {
   createStateMachine,
   type PomodoroState,
-  type PomodoroEvent,
   type PomodoroConfig,
-  DEFAULT_CONFIG,
 } from './pomodoroStateMachine'
 import {
   playStartSound,
@@ -25,7 +23,6 @@ import {
   playPauseSound,
   initAudio,
   setMuted,
-  isMuted,
 } from './useSound'
 import {
   requestNotificationPermission,
@@ -43,6 +40,7 @@ export interface UsePomodoroReturn {
   formattedTime: ComputedRef<string>
   focusCount: ComputedRef<number>
   totalFocusToday: ComputedRef<number>
+  longBreakInterval: ComputedRef<number>
 
   // 动作
   startFocus: () => void
@@ -227,8 +225,7 @@ export function usePomodoro(initialConfig?: Partial<PomodoroConfig>): UsePomodor
     currentMode.value = result.newState
 
     if (result.duration > 0 && remainingSeconds.value > 0) {
-      // RESUME 后重新启动定时器
-      totalSeconds.value = result.duration
+      // RESUME 后重新启动定时器（保持 totalSeconds 不变，避免进度环跳变）
       if (worker) {
         worker.postMessage({
           type: 'start',
@@ -319,6 +316,7 @@ export function usePomodoro(initialConfig?: Partial<PomodoroConfig>): UsePomodor
     formattedTime,
     focusCount: computed(() => focusCount.value),
     totalFocusToday: computed(() => totalFocusToday.value),
+    longBreakInterval: computed(() => sm.getContext().config.longBreakInterval),
 
     startFocus,
     pause,
