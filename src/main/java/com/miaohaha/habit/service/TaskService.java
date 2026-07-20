@@ -3,9 +3,11 @@ package com.miaohaha.habit.service;
 import com.miaohaha.habit.model.Task;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ReactiveExtensionClient;
 
@@ -17,7 +19,10 @@ public class TaskService {
 
     public Mono<List<Task>> listAll() {
         return client.list(Task.class, null, null)
-            .sort(Comparator.comparing(t -> t.getSpec().getCreatedAt(), Comparator.reverseOrder()))
+            .sort(Comparator.comparing((Task t) -> {
+                Integer order = t.getSpec().getSortOrder();
+                return order != null ? order : Integer.MAX_VALUE;
+            }))
             .collectList();
     }
 
@@ -43,7 +48,32 @@ public class TaskService {
         }
         task.getSpec().setCreatedAt(java.time.Instant.now());
         task.getSpec().setUpdatedAt(java.time.Instant.now());
-        return client.create(task);
+        // Auto-assign sortOrder at end of list
+        return client.list(Task.class, null, null)
+            .map(t -> t.getSpec().getSortOrder())
+            .defaultIfEmpty(0)
+            .collectList()
+            .flatMap(orders -> {
+                int maxOrder = orders.stream().filter(o -> o != null).mapToInt(Integer::intValue).max().orElse(0);
+                task.getSpec().setSortOrder(maxOrder + 1);
+                return client.create(task);
+            });
+    }
+
+    public Mono<Void> reorder(List<Map<String, Object>> items) {
+        return Flux.fromIterable(items)
+            .flatMap(item -> {
+                String name = (String) item.get("name");
+                Integer sortOrder = item.get("sortOrder") != null
+                    ? ((Number) item.get("sortOrder")).intValue() : 0;
+                return client.fetch(Task.class, name)
+                    .flatMap(t -> {
+                        t.getSpec().setSortOrder(sortOrder);
+                        t.getSpec().setUpdatedAt(java.time.Instant.now());
+                        return client.update(t);
+                    });
+            })
+            .then();
     }
 
     public Mono<Task> update(String name, Task updated) {
@@ -60,6 +90,9 @@ public class TaskService {
                 }
                 if (updated.getSpec().getEstimatedPomos() != null) {
                     existing.getSpec().setEstimatedPomos(updated.getSpec().getEstimatedPomos());
+                }
+                if (updated.getSpec().getSortOrder() != null) {
+                    existing.getSpec().setSortOrder(updated.getSpec().getSortOrder());
                 }
                 existing.getSpec().setUpdatedAt(java.time.Instant.now());
                 return client.update(existing);

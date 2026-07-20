@@ -198,3 +198,13 @@ export function useTheme() {
     toggleTheme,
   }
 }
+
+/**
+ * Standalone init for app entry point (non-component context).
+ * Call once at app bootstrap to apply persisted theme before any component mounts.
+ */
+export function initTheme() {
+  injectGlobalStyles()
+  loadTheme()
+  setupSystemListener()
+}

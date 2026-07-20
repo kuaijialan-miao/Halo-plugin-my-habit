@@ -40,6 +40,11 @@ public class TaskController {
         return taskService.delete(name).then();
     }
 
+    @PostMapping("/reorder")
+    public Mono<Void> reorder(@RequestBody java.util.List<java.util.Map<String, Object>> items) {
+        return taskService.reorder(items);
+    }
+
     @PostMapping("/{name}/pomodoro")
     public Mono<Task> incrementPomodoro(@PathVariable String name) {
         return taskService.incrementPomodoro(name);

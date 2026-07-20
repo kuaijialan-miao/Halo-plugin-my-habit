@@ -8,4 +8,6 @@ export const taskApi = {
   update: (name: string, task: Partial<Task>) => api.put<Task>(`/tasks/${name}`, task),
   delete: (name: string) => api.del<void>(`/tasks/${name}`),
   incrementPomodoro: (name: string) => api.post<Task>(`/tasks/${name}/pomodoro`),
+  reorder: (items: { name: string; sortOrder: number }[]) =>
+    api.post<void>('/tasks/reorder', items),
 }

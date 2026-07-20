@@ -48,6 +48,7 @@ export interface TaskSpec {
   status: 'TODO' | 'IN_PROGRESS' | 'DONE'
   estimatedPomos: number
   pomodoroCount: number
+  sortOrder: number
   createdAt: string
   updatedAt: string
 }

@@ -153,6 +153,21 @@ function onDrop(targetIndex: number) {
   tasks.value = allItems
 
   dragIndex.value = null
+
+  // Day 25: 持久化排序到后端
+  persistOrder(allItems)
+}
+
+async function persistOrder(items: Task[]) {
+  const reorderItems = items.map((t, i) => ({
+    name: t.metadata.name,
+    sortOrder: i,
+  }))
+  try {
+    await taskApi.reorder(reorderItems)
+  } catch (e) {
+    console.error('Failed to persist task order:', e)
+  }
 }
 
 function onDragEnd() {

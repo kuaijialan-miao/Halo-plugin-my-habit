@@ -24,6 +24,7 @@ public class Task extends AbstractExtension {
         private TaskStatus status;
         private Integer pomodoroCount;
         private Integer estimatedPomos;
+        private Integer sortOrder;
         private Instant createdAt;
         private Instant updatedAt;
     }
