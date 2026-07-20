@@ -43,9 +43,10 @@ async function loadData() {
   loading.value = true
   try {
     const today = new Date()
-    // 计算52周前的周日
+    today.setHours(0, 0, 0, 0)
+    // 往前推 364 天（52 周），从今天开始倒推
     const startDate = new Date(today)
-    startDate.setDate(today.getDate() - today.getDay() - (TOTAL_WEEKS - 1) * 7)
+    startDate.setDate(today.getDate() - TOTAL_WEEKS * DAYS_PER_WEEK + 1)
 
     // 构建日期到周索引的映射
     const dateMap = new Map<string, { dayOfWeek: number; weekIndex: number }>()
@@ -53,7 +54,10 @@ async function loadData() {
     for (let w = 0; w < TOTAL_WEEKS; w++) {
       for (let d = 0; d < DAYS_PER_WEEK; d++) {
         const dateStr = formatDate(cursor)
-        dateMap.set(dateStr, { dayOfWeek: d, weekIndex: w })
+        // 跳过未来日期
+        if (cursor.getTime() <= today.getTime()) {
+          dateMap.set(dateStr, { dayOfWeek: d, weekIndex: w })
+        }
         cursor.setDate(cursor.getDate() + 1)
       }
     }

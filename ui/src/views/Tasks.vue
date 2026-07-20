@@ -128,18 +128,30 @@ function onDragOver(e: DragEvent) {
 
 function onDrop(targetIndex: number) {
   if (dragIndex.value === null || dragIndex.value === targetIndex) return
-  const items = [...filteredTasks.value]
-  const [moved] = items.splice(dragIndex.value, 1)
-  items.splice(targetIndex, 0, moved)
-  // 更新原数组中对应项的顺序
-  const allItems = [...tasks.value]
-  const movedItem = allItems.find(t => t.metadata.name === moved.metadata.name)
-  if (movedItem) {
-    const originalIdx = allItems.indexOf(movedItem)
-    allItems.splice(originalIdx, 1)
-    allItems.splice(allItems.indexOf(items[targetIndex - 1] || items[0]), 0, movedItem)
-    tasks.value = allItems
+
+  const dragged = filteredTasks.value[dragIndex.value]
+  const target = filteredTasks.value[targetIndex]
+  if (!dragged || !target) {
+    dragIndex.value = null
+    return
   }
+
+  // 在原 tasks 数组中定位拖拽项和目标项
+  const allItems = [...tasks.value]
+  const draggedGlobalIdx = allItems.findIndex(t => t.metadata.name === dragged.metadata.name)
+  const targetGlobalIdx = allItems.findIndex(t => t.metadata.name === target.metadata.name)
+
+  if (draggedGlobalIdx === -1 || targetGlobalIdx === -1) {
+    dragIndex.value = null
+    return
+  }
+
+  const [moved] = allItems.splice(draggedGlobalIdx, 1)
+  // 删除后索引可能偏移，重新定位
+  const newTargetIdx = allItems.findIndex(t => t.metadata.name === target.metadata.name)
+  allItems.splice(newTargetIdx + (draggedGlobalIdx < targetGlobalIdx ? 0 : 1), 0, moved)
+  tasks.value = allItems
+
   dragIndex.value = null
 }
 

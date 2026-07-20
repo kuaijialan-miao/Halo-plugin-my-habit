@@ -97,14 +97,31 @@
 import { computed } from 'vue'
 import ProgressRing from './ProgressRing.vue'
 import { usePomodoro, type UsePomodoroReturn } from '../composables/usePomodoro'
-import type { PomodoroState } from '../composables/pomodoroStateMachine'
+import type { PomodoroState, PomodoroConfig } from '../composables/pomodoroStateMachine'
+
+/** 从 localStorage 读取用户设置，作为番茄钟初始配置 */
+function loadTimerConfig(): Partial<PomodoroConfig> {
+  try {
+    const raw = localStorage.getItem('habit-tracker-settings')
+    if (raw) {
+      const s = JSON.parse(raw)
+      return {
+        focusDuration: (s.focusDuration || 25) * 60,
+        shortBreakDuration: (s.shortBreakDuration || 5) * 60,
+        longBreakDuration: (s.longBreakDuration || 15) * 60,
+        longBreakInterval: s.longBreakInterval || 4,
+      }
+    }
+  } catch {}
+  return {}
+}
 
 const emit = defineEmits<{
   (e: 'focusComplete', count: number): void
   (e: 'stateChange', state: PomodoroState): void
 }>()
 
-const pomodoro: UsePomodoroReturn = usePomodoro()
+const pomodoro: UsePomodoroReturn = usePomodoro(loadTimerConfig())
 
 const {
   state,

@@ -74,12 +74,20 @@ async function requestNotifPermission() {
 async function exportData() {
   exporting.value = true
   try {
-    const [habits, checkins, pomodoros, tasks] = await Promise.all([
+    const [habits, pomodoros, tasks] = await Promise.all([
       habitApi.list().catch(() => []),
-      checkInApi.list().catch(() => []),
       pomodoroApi.list().catch(() => []),
       taskApi.list().catch(() => []),
     ])
+
+    // 遍历所有习惯收集完整打卡记录（后端 /checkins?habit= 无参仅返回当天）
+    const checkins: Awaited<ReturnType<typeof checkInApi['list']>> = []
+    for (const h of habits) {
+      try {
+        const list = await checkInApi.list(h.spec.name)
+        checkins.push(...list)
+      } catch {}
+    }
 
     const data = {
       exportDate: new Date().toISOString(),

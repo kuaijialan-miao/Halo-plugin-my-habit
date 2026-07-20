@@ -66,10 +66,12 @@ function selectColor(color: string) {
   newHabit.value.color = color
 }
 
-const selectedHabitObj = ref<Habit | null>(null)
+const currentHabit = computed(() =>
+  habits.value.find(h => h.spec.name === selectedHabit.value) || null
+)
+
 function selectHabit(name: string) {
   selectedHabit.value = name
-  selectedHabitObj.value = habits.value.find(h => h.spec.name === name) || null
 }
 </script>
 
@@ -143,21 +145,19 @@ function selectHabit(name: string) {
       </div>
 
       <!-- 当前选中的习惯详情 -->
-      <div v-if="selectedHabit" class="habit-detail">
+      <div v-if="selectedHabit && currentHabit" class="habit-detail">
         <div class="habit-hero">
           <div class="habit-info">
-            <span class="habit-icon-lg">
-              {{ habits.find(h => h.spec.name === selectedHabit)?.spec.icon }}
-            </span>
+            <span class="habit-icon-lg">{{ currentHabit.spec.icon }}</span>
             <div>
               <h3>{{ selectedHabit }}</h3>
               <p class="habit-target">
-                目标 {{ habits.find(h => h.spec.name === selectedHabit)?.spec.targetDays }} 天
+                目标 {{ currentHabit.spec.targetDays }} 天
               </p>
             </div>
           </div>
           <CheckInButton
-            :habit="habits.find(h => h.spec.name === selectedHabit)!"
+            :habit="currentHabit"
             :key="selectedHabit"
           />
         </div>
