@@ -1,4 +1,4 @@
-const BASE_URL = '/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-habit-tracker/api'
+const BASE_URL = '/apis/api.plugin.halo.run/v1alpha1/plugins/habit-tracker/api'
 const REQUEST_TIMEOUT_MS = 15000
 
 /**

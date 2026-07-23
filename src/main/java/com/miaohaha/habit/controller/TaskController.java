@@ -9,7 +9,7 @@ import run.halo.app.plugin.ApiVersion;
 
 @ApiVersion("v1alpha1")
 @RestController
-@RequestMapping("/plugins/plugin-habit-tracker/api/tasks")
+@RequestMapping("/api/tasks")
 @RequiredArgsConstructor
 public class TaskController {
 

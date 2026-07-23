@@ -10,7 +10,7 @@ import run.halo.app.plugin.ApiVersion;
 
 @ApiVersion("v1alpha1")
 @RestController
-@RequestMapping("/plugins/plugin-habit-tracker/api/pomodoros")
+@RequestMapping("/api/pomodoros")
 @RequiredArgsConstructor
 public class PomodoroController {
 

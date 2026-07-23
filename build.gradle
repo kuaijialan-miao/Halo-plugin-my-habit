@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.miaohaha.habit"
-version = "1.0.0"
+version = "1.0.2"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -40,6 +40,8 @@ jar {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
+    // 保留方法参数名，@RequestParam 等注解才能正确解析（否则运行时 500）
+    options.compilerArgs.add("-parameters")
 }
 
 test {

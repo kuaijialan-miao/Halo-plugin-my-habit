@@ -11,7 +11,7 @@ import run.halo.app.plugin.ApiVersion;
 
 @ApiVersion("v1alpha1")
 @RestController
-@RequestMapping("/plugins/plugin-habit-tracker/api/checkins")
+@RequestMapping("/api/checkins")
 @RequiredArgsConstructor
 public class CheckInController {
 

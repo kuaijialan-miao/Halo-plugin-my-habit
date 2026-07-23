@@ -29,7 +29,7 @@ export default definePlugin({
               searchable: true,
               menu: {
                 name: "仪表盘",
-                group: "tool",
+                group: "content",
                 icon: "dashboard",
                 priority: 50,
               },
@@ -44,7 +44,7 @@ export default definePlugin({
               searchable: true,
               menu: {
                 name: "番茄钟",
-                group: "tool",
+                group: "content",
                 icon: "timer",
                 priority: 51,
               },
@@ -59,7 +59,7 @@ export default definePlugin({
               searchable: true,
               menu: {
                 name: "习惯打卡",
-                group: "tool",
+                group: "content",
                 icon: "check-circle",
                 priority: 52,
               },
@@ -74,7 +74,7 @@ export default definePlugin({
               searchable: true,
               menu: {
                 name: "任务管理",
-                group: "tool",
+                group: "content",
                 icon: "task",
                 priority: 53,
               },
@@ -89,7 +89,7 @@ export default definePlugin({
               searchable: true,
               menu: {
                 name: "数据统计",
-                group: "tool",
+                group: "content",
                 icon: "chart",
                 priority: 54,
               },
@@ -104,7 +104,7 @@ export default definePlugin({
               searchable: true,
               menu: {
                 name: "设置",
-                group: "tool",
+                group: "content",
                 icon: "settings",
                 priority: 55,
               },

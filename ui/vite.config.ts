@@ -36,7 +36,7 @@ export default defineConfig({
         globals: {
           vue: "Vue",
           "vue-router": "VueRouter",
-          "@halo-dev/console-shared": "HaloConsoleShared",
+          "@halo-dev/console-shared": "HaloUiShared",
           "@halo-dev/components": "HaloComponents",
           echarts: "echarts",
         },
